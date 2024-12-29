@@ -6,13 +6,13 @@ import App from './App.jsx';
 import ScanReceipt from './scanReceipt.jsx';
 import ReceiptList from './receiptList.jsx';
 import SelectItem from './selectItem.jsx';
-// import PaymentRecap from './paymentRecap.jsx';
+import PaymentRecap from './paymentRecap.jsx';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: (
-      <div className='m-10'>
+      <div>
         <App />
         <Outlet />
       </div>
@@ -21,7 +21,7 @@ const router = createBrowserRouter([
       { path: '/', element: <ScanReceipt /> },
       { path: 'receiptList', element: <ReceiptList /> },
       { path: 'selectItem', element: <SelectItem /> },
-      // { path: 'paymentRecap', element: <PaymentRecap /> },
+      { path: 'paymentRecap', element: <PaymentRecap /> },
     ]
   }
 ]);

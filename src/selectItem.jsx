@@ -5,11 +5,19 @@ const SelectItem = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [items, setItems] = useState([]);
+    const [receiptName, setReceiptName] = useState('');
+    const [scanDate, setScanDate] = useState('');
+    const [totals, setTotals] = useState({ subtotal: 0, tax: 0, total: 0 });
 
     useEffect(() => {
-        console.log('location.state:', location.state);
-        if (Array.isArray(location.state)) {
-            setItems(location.state);
+        if (location.state) {
+            const { items = [], receiptName = '', scanDate = '' } = location.state;
+            setItems(items);
+            setReceiptName(receiptName);
+            setScanDate(scanDate);
+            if (items.length > 0) {
+                calculateTotals(items);
+            }
         }
     }, [location.state]);
 
@@ -19,23 +27,44 @@ const SelectItem = () => {
         if (newQuantity >= 0) {
             updatedItems[index].quantity = newQuantity.toString();
             setItems(updatedItems);
+            calculateTotals(updatedItems);
         }
     };
 
-    const calculateTotal = () => {
-        return items.reduce((total, item) => total + (parseInt(item.quantity, 10) * parseInt(item.price, 10)), 0);
+    const calculateTotals = (items) => {
+        if (!items) return;
+        const subtotal = items.reduce((acc, item) => acc + (parseFloat(item.price) * parseInt(item.quantity)), 0);
+        const tax = subtotal * 0.1;
+        const total = subtotal + tax;
+        setTotals({ subtotal, tax, total });
     };
 
     const handlePayment = () => {
-        alert(`Total payment is Rp ${calculateTotal()}`);
-        navigate('/');
+        const paymentRecapData = items.map(item => ({
+            name: item.name,
+            total: parseInt(item.quantity, 10) * parseFloat(item.price),
+            status: 'Unpaid'
+        }));
+        navigate('/paymentRecap', { state: { payments: paymentRecapData, scanDate } });
     };
 
     return (
-        <div className="max-w-md mx-auto p-8 bg-white shadow-lg rounded-lg" style={{ fontFamily: 'Arial, sans-serif' }}>
-            <h2 className="text-2xl font-bold mb-6 text-center text-teal-600">Select Item</h2>
-            <p className="text-center text-gray-600 mb-4">20 DESEMBER 2024</p>
-            <p className="text-center text-gray-600 mb-8">Rafi</p>
+        <div className="p-8 bg-white shadow-lg rounded-lg" style={{ fontFamily: 'Arial, sans-serif' }}>
+            <div className="flex justify-between items-center mb-4">
+                <button onClick={() => navigate(-1)} className="text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h2 className="text-2xl font-bold text-center text-black">Select Item</h2>
+                <div className="w-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
+                    </svg>
+                </div>
+            </div>
+            <p className="text-center text-gray-600 mb-1">{scanDate}</p>
+            <p className="text-center text-indigo-700 mb-4">Created by: {receiptName}</p>
             <form>
                 {items.map((item, index) => (
                     <div key={index} className="mb-4">
@@ -45,7 +74,7 @@ const SelectItem = () => {
                                 <button
                                     type="button"
                                     onClick={() => handleQuantityChange(index, -1)}
-                                    className="py-1 px-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200"
+                                    className="py-1 px-3 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition duration-200"
                                 >
                                     -
                                 </button>
@@ -53,7 +82,7 @@ const SelectItem = () => {
                                 <button
                                     type="button"
                                     onClick={() => handleQuantityChange(index, 1)}
-                                    className="py-1 px-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200"
+                                    className="py-1 px-3 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition duration-200"
                                 >
                                     +
                                 </button>
@@ -64,15 +93,15 @@ const SelectItem = () => {
                 ))}
                 <div className="mt-8 text-center">
                     <h3 className="text-lg font-semibold mb-2">Total Tagihan Anda</h3>
-                    <p className="text-2xl font-bold text-teal-600">Rp {calculateTotal()}</p>
+                    <p className="text-2xl font-bold text-indigo-700">Rp {totals.total.toFixed(2)}</p>
                 </div>
                 <div className="mt-8 text-center">
                     <button
                         type="button"
                         onClick={handlePayment}
-                        className="py-2 px-4 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition duration-200"
+                        className="py-2 px-4 bg-indigo-700 text-white rounded-md hover:bg-indigo-700 transition duration-200"
                     >
-                        Pay Rp {calculateTotal()}
+                        Pay Rp {totals.total.toFixed(2)}
                     </button>
                 </div>
             </form>
