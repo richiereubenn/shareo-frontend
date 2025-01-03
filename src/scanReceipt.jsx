@@ -105,20 +105,22 @@ const ScanReceipt = () => {
             <div className='flex flex-col h-[660px] justify-between'>
                 <div className='flex flex-col'>
                     <div className='flex flex-col justify-center items-center'>
-                        <video ref={videoRef} width="300" height="300" className="border text-center" />
+                        <video ref={videoRef} width="1000" height="500" className="border text-center" />
                         <canvas ref={canvasRef} width="400" height="300" style={{ display: 'none' }} />
                         <button
                             onClick={capturePhoto}
-                            className="mt-4 bg-indigo-700 text-white py-2 px-4 rounded-full w-12 h-12 flex items-center justify-center"
+                            className="mt-4 bg-gray-400 text-white py-2 px-4 rounded-full w-12 h-12 flex items-center justify-center"
                         >
                         </button>
                     </div>
+                    <div className='flex justify-center'>
                     <input
                         type="file"
                         accept="image/*"
                         onChange={handleFileChange}
                         className="mt-4"
                     />
+                    </div>
                     {image && (
                         <div className="flex mt-4 gap-3">
                             <h2 className="text-lg font-semibold">Preview :</h2>
@@ -129,7 +131,7 @@ const ScanReceipt = () => {
                 <div>
                     <button
                         onClick={handleNext}
-                        className={`mt-4 w-full rounded border-2 border-indigo-700 px-12 py-2 text-sm font-medium ${image ? 'bg-indigo-700 text-white hover:bg-transparent hover:text-indigo-700' : 'bg-gray-400 text-white border-transparent cursor-not-allowed'} focus:outline-none focus:ring active:text-indigo-00`}
+                        className={`mt-4 w-full rounded border-2 border-gray-400 px-12 py-2 text-sm font-medium ${image ? 'bg-gray-400 text-white hover:bg-transparent hover:text-gray-700' : 'bg-gray-200 border-gray-200 text-white border-transparent cursor-not-allowed'} focus:outline-none focus:ring active:text-gray-00`}
                         disabled={!image}
                     >
                         Next

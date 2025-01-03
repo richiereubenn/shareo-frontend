@@ -49,26 +49,31 @@ const SelectItem = () => {
     };
 
     return (
-        <div className="p-8 bg-white shadow-lg rounded-lg" style={{ fontFamily: 'Arial, sans-serif' }}>
+        <div className="p-8 bg-white">
             <div className="flex justify-between items-center mb-4">
                 <button onClick={() => navigate(-1)} className="text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
-                <h2 className="text-2xl font-bold text-center text-black">Select Item</h2>
+            </div>
+            <div className="flex justify-between items-center mb-2">
+                <h2 className="text-2xl font-bold text-left text-black">Select Item</h2>
                 <div className="w-6">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
                     </svg>
                 </div>
             </div>
-            <p className="text-center text-gray-600 mb-1">{scanDate}</p>
-            <p className="text-center text-indigo-700 mb-4">Created by: {receiptName}</p>
+            {/* <p className="text-left text-gray-600 mb-1">{scanDate}</p>
+            <p className="text-left text-indigo-700 mb-4">Created by: {receiptName}</p> */}
+            {/* Dummy */}
+            <p className="text-left text-gray-600 mb-1">3 Januari 2025</p>
+            <p className="text-left text-indigo-700 mb-6">Created by: Rafi</p>
             <form>
                 {items.map((item, index) => (
                     <div key={index} className="mb-4">
-                        <div className="flex justify-between items-center mb-2">
+                        <div className="grid grid-cols-3 gap-1 mb-2 items-center mb-2" style={{ gridTemplateColumns: '3fr 2fr 1fr' }}>
                             <h3 className="text-lg font-semibold">{item.name}</h3>
                             <div className="flex items-center">
                                 <button
@@ -89,17 +94,18 @@ const SelectItem = () => {
                             </div>
                             <span>Rp {item.price}</span>
                         </div>
+                        <hr className="my-4 border-gray-300" />
                     </div>
                 ))}
-                <div className="mt-8 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Total Tagihan Anda</h3>
+                <div className="flex justify-between mt-8 text-center">
+                    <h3 className="text-lg font-bold mb-2 text-indigo-700">Total Tagihan Anda</h3>
                     <p className="text-2xl font-bold text-indigo-700">Rp {totals.total.toFixed(2)}</p>
                 </div>
                 <div className="mt-8 text-center">
                     <button
                         type="button"
                         onClick={handlePayment}
-                        className="py-2 px-4 bg-indigo-700 text-white rounded-md hover:bg-indigo-700 transition duration-200"
+                        className="py-2 px-6 bg-indigo-700 text-white font-bold rounded-full hover:bg-indigo-700 transition duration-200"
                     >
                         Pay Rp {totals.total.toFixed(2)}
                     </button>
