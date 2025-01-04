@@ -4,7 +4,10 @@ import AuthPages from './pages/AuthPage';
 import PaymentPage from './pages/PaymentPage';
 import TopUpPage from './pages/TopUpPage';
 import SuccessPage from './pages/SuccessPage';
-import { useState } from 'react'
+import InvitationCode from "./pages/InvitationCodePage";
+import JoinRoom from "./pages/JoinRoomPage";
+import QRScanner from "./pages/QRScannerPage";
+import Homepage from "./pages/Homepage";
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
