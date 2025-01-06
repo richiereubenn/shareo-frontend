@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthPages from './pages/AuthPage';
 import PaymentPage from './pages/PaymentPage';
