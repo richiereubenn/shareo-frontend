@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import shareoLogo from "../assets/images/Shareo.png";
+import { useSignIn } from "@clerk/clerk-react";
+import { useSignUp } from "@clerk/clerk-react";
 
 export default function AuthPage() {
   const [currentView, setCurrentView] = useState("login");
@@ -12,7 +14,25 @@ export default function AuthPage() {
 }
 
 function LoginForm({ onSwitch }) {
+  const { signIn, setSession } = useSignIn();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const completeSignIn = await signIn.create({
+        identifier: email,
+        password,
+      });
+      await setSession(completeSignIn.createdSessionId);
+      alert("Login successful!");
+    } catch (err) {
+      setError(err.errors ? err.errors[0].message : "Login failed.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white px-4 py-8 sm:px-6">
@@ -27,7 +47,8 @@ function LoginForm({ onSwitch }) {
         </div>
 
         <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            {error && <div className="text-red-500 text-sm">{error}</div>}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email/Phone Number
@@ -40,6 +61,8 @@ function LoginForm({ onSwitch }) {
                   type="text"
                   className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   placeholder="Enter your email or phone"
+                  value = {email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
@@ -56,6 +79,8 @@ function LoginForm({ onSwitch }) {
                   type={showPassword ? "text" : "password"}
                   className="w-full pl-10 pr-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   placeholder="Enter your password"
+                  value = {password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -142,7 +167,32 @@ function LoginForm({ onSwitch }) {
 }
 
 function RegisterForm({ onSwitch }) {
+  const { signUp, setSession } = useSignUp();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const completeSignUp = await signUp.create({
+        emailAddress: email,
+        password,
+        phoneNumber: phone,
+        fullName: name,
+      });
+      console.log("Sign Up Status:", completeSignUp.status); // Tambahkan log
+    if (completeSignUp.status === "unverified") {
+      await signUp.attemptEmailAddressVerification();
+      alert("Please check your email to verify your account.");
+    }
+  } catch (err) {
+    setError(err.errors ? err.errors[0].message : "Registration failed.");
+  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white px-4 py-8 sm:px-6">
@@ -159,7 +209,8 @@ function RegisterForm({ onSwitch }) {
         </div>
 
         <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={handleSubmit}>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Full Name
@@ -172,6 +223,8 @@ function RegisterForm({ onSwitch }) {
                   type="text"
                   className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   placeholder="Enter your full name"
+                  value = {name}
+                  onChange={(e) => setName(e.target.value)}
                 />
               </div>
             </div>
@@ -188,6 +241,8 @@ function RegisterForm({ onSwitch }) {
                   type="email"
                   className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   placeholder="Enter your email"
+                  value = {email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
@@ -204,6 +259,8 @@ function RegisterForm({ onSwitch }) {
                   type="tel"
                   className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   placeholder="Enter your phone number"
+                  value = {phone}
+                  onChange={(e) => setPhone(e.target.value)}
                 />
               </div>
             </div>
@@ -220,6 +277,8 @@ function RegisterForm({ onSwitch }) {
                   type={showPassword ? "text" : "password"}
                   className="w-full pl-10 pr-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   placeholder="Create a password"
+                  value = {password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
