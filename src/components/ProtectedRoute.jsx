@@ -1,12 +1,20 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+// components/ProtectedRoute.js
 import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
-  const { isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
+  const navigate = useNavigate();
 
-  if (!isSignedIn) {
-    return <Navigate to="/" replace />;
+  if (!isLoaded) {
+    return null; // or a loading spinner
+  }
+
+  if (!isSignedIn || !user) {
+    console.log("not signed in");
+    navigate("/");
+  } else {
+    navigate("/home");
   }
 
   return children;

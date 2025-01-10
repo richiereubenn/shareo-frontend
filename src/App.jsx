@@ -14,8 +14,15 @@ import InvitationCode from "./pages/InvitationCodePage";
 import JoinRoom from "./pages/JoinRoomPage";
 import QRScanner from "./pages/QRScannerPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { useUser } from "@clerk/clerk-react";
 
 function App() {
+
+  const { isSignedIn, user, isLoaded } = useUser()
+  if (isSignedIn) {
+    console.log(user.firstName)
+  }
+
   const [transactionData, setTransactionData] = useState(null);
 
   const handleNavigation = (page, data) => {
@@ -29,99 +36,102 @@ function App() {
       <Route
         path="/"
         element={
-          <SignedOut>
-            <AuthPage />
-          </SignedOut>
+          <>
+            <SignedOut>
+              <AuthPage />
+            </SignedOut>
+            <SignedIn>
+              <Homepage />
+            </SignedIn>
+          </>
         }
       />
-      <Route
-        path="/"
+      {/* <Route
+        path="/home"
         element={
           <SignedIn>
-            <ProtectedRoute>
-              <Homepage />
-            </ProtectedRoute>
+            <Homepage />
           </SignedIn>
         }
-      />
+      /> */}
       <Route
         path="/payment"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <PaymentPage onNavigate={handleNavigation} />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
       <Route
         path="/topup"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <TopUpPage onNavigate={handleNavigation} />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
       <Route
         path="/success"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <SuccessPage {...transactionData} />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
       <Route
         path="/scan-receipt"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <ScanReceipt />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
       <Route
         path="/receipt-list"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <ReceiptList />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
       <Route
         path="/select-item"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <SelectItem />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
       <Route
         path="/payment-recap"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <PaymentRecap />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
       <Route
         path="/invitation-code"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <InvitationCode />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
       <Route
         path="/join-room"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <JoinRoom />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
       <Route
         path="/scan-qr"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <QRScanner />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
 
