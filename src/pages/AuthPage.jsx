@@ -3,6 +3,8 @@ import { User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import shareoLogo from "../assets/images/Shareo.png";
 import { useSignIn } from "@clerk/clerk-react";
 import { useSignUp } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
+import db from "../controllers/firebaseConfig";
 
 export default function AuthPage() {
   const [currentView, setCurrentView] = useState("login");
@@ -20,16 +22,28 @@ function LoginForm({ onSwitch }) {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const navigate = useNavigate()  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const completeSignIn = await signIn.create({
+      const result = await signIn.create({
         identifier: email,
         password,
       });
-      await setSession(completeSignIn.createdSessionId);
-      alert("Login successful!");
+
+      if (result.status === "complete") {
+        // Successfully signed in, you can redirect here
+        alert("Login successful!");
+        // navigate("/home"); // or wherever you want to redirect
+        navigate("/"); // or wherever you want to redirect
+      } else {
+        // Handle any additional sign-in factors if needed
+        console.log("Additional sign-in factors may be required");
+        console.log(result);
+      }
     } catch (err) {
+      console.error(err);
       setError(err.errors ? err.errors[0].message : "Login failed.");
     }
   };
@@ -61,7 +75,7 @@ function LoginForm({ onSwitch }) {
                   type="text"
                   className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   placeholder="Enter your email or phone"
-                  value = {email}
+                  value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
@@ -79,7 +93,7 @@ function LoginForm({ onSwitch }) {
                   type={showPassword ? "text" : "password"}
                   className="w-full pl-10 pr-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   placeholder="Enter your password"
-                  value = {password}
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
@@ -167,31 +181,68 @@ function LoginForm({ onSwitch }) {
 }
 
 function RegisterForm({ onSwitch }) {
-  const { signUp, setSession } = useSignUp();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [password, setPassword] = useState('');
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState('');
+  const router = useNavigate()
 
+  // Form Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const completeSignUp = await signUp.create({
-        emailAddress: email,
-        password,
-        phoneNumber: phone,
-        fullName: name,
-      });
-      console.log("Sign Up Status:", completeSignUp.status); // Tambahkan log
-    if (completeSignUp.status === "unverified") {
-      await signUp.attemptEmailAddressVerification();
-      alert("Please check your email to verify your account.");
+
+    if (!isLoaded) {
+      return;
     }
-  } catch (err) {
-    setError(err.errors ? err.errors[0].message : "Registration failed.");
-  }
+
+    try {
+      await signUp.create({
+        first_name: firstName,
+        last_name: lastName,
+        email_address: email,
+        password,
+      });
+
+      // send the email.
+      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+
+      // change the UI to our pending section.
+      setPendingVerification(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Verify User Email Code
+  const onPressVerify = async (e) => {
+    e.preventDefault();
+    if (!isLoaded) {
+      return;
+    }
+
+    try {
+      const completeSignUp = await signUp.attemptEmailAddressVerification({
+        code,
+      });
+      if (completeSignUp.status !== 'complete') {
+        /*  investigate the response, to see if there was an error
+         or if the user needs to complete more steps.*/
+        console.log(JSON.stringify(completeSignUp, null, 2));
+      }
+      if (completeSignUp.status === 'complete') {
+        await setActive({ session: completeSignUp.createdSessionId });
+        router('/home');
+      }
+    } catch (err) {
+      console.error(JSON.stringify(err, null, 2));
+    }
   };
 
   return (
@@ -208,152 +259,198 @@ function RegisterForm({ onSwitch }) {
           </p>
         </div>
 
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-          <form className="space-y-5" onSubmit={handleSubmit}>
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User size={18} className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                  placeholder="Enter your full name"
-                  value = {name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-            </div>
+        {!pendingVerification && (
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={18} className="text-gray-400" />
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              {error && <div className="text-red-500 text-sm">{error}</div>}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User size={18} className="text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    placeholder="Enter your full name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required={true}
+                  />
                 </div>
-                <input
-                  type="email"
-                  className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                  placeholder="Enter your email"
-                  value = {email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone size={18} className="text-gray-400" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User size={18} className="text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    placeholder="Enter your full name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required={true}
+                  />
                 </div>
-                <input
-                  type="tel"
-                  className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                  placeholder="Enter your phone number"
-                  value = {phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={18} className="text-gray-400" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail size={18} className="text-gray-400" />
+                  </div>
+                  <input
+                    type="email"
+                    className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required={true}
+                  />
                 </div>
+              </div>
+
+              {/* <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Phone size={18} className="text-gray-400" />
+                  </div>
+                  <input
+                    type="tel"
+                    className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    placeholder="Enter your phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+              </div> */}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock size={18} className="text-gray-400" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="w-full pl-10 pr-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    placeholder="Create a password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} className="text-gray-400" />
+                    ) : (
+                      <Eye size={18} className="text-gray-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center">
                 <input
-                  type={showPassword ? "text" : "password"}
-                  className="w-full pl-10 pr-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                  placeholder="Create a password"
-                  value = {password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="terms"
+                  type="checkbox"
+                  className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                <label
+                  htmlFor="terms"
+                  className="ml-2 block text-sm text-gray-700"
                 >
-                  {showPassword ? (
-                    <EyeOff size={18} className="text-gray-400" />
-                  ) : (
-                    <Eye size={18} className="text-gray-400" />
-                  )}
+                  I agree to the Terms of Service and Privacy Policy
+                </label>
+              </div>
+
+              <div id="clerk-captcha"></div>
+
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              >
+                Create Account
+              </button>
+            </form>
+
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <button className="flex w-full justify-center items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  <img
+                    className="h-5 w-5"
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/800px-Google_%22G%22_logo.svg.png"
+                    alt="Google"
+                  />
+                  <span className="ml-2 text-sm font-medium text-gray-700">
+                    Google
+                  </span>
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center">
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Already have an account?{" "}
+                <button
+                  onClick={onSwitch}
+                  className="text-indigo-600 font-medium hover:text-indigo-500"
+                >
+                  Sign in
+                </button>
+              </p>
+            </div>
+          </div>
+        )}
+
+        {pendingVerification && (
+          <div>
+            <form className='space-y-4 md:space-y-6'>
               <input
-                id="terms"
-                type="checkbox"
-                className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                value={code}
+                className='bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5'
+                placeholder='Enter Verification Code...'
+                onChange={(e) => setCode(e.target.value)}
               />
-              <label
-                htmlFor="terms"
-                className="ml-2 block text-sm text-gray-700"
-              >
-                I agree to the Terms of Service and Privacy Policy
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-            >
-              Create Account
-            </button>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <button className="flex w-full justify-center items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                <img
-                  className="h-5 w-5"
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/800px-Google_%22G%22_logo.svg.png"
-                  alt="Google"
-                />
-                <span className="ml-2 text-sm font-medium text-gray-700">
-                  Google
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{" "}
               <button
-                onClick={onSwitch}
-                className="text-indigo-600 font-medium hover:text-indigo-500"
+                type='submit'
+                onClick={onPressVerify}
+                className='w-full text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center'
               >
-                Sign in
+                Verify Email
               </button>
-            </p>
+            </form>
           </div>
-        </div>
+        )}
+
       </div>
     </div>
   );
