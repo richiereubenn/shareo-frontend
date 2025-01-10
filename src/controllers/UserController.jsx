@@ -41,7 +41,7 @@ const getUserTransactions = async (userId) => {
         const transactionsRef = collection(db, "transactions");
 
         // Query to fetch transactions where userId matches
-        const q = query(transactionsRef, where("userId", "==", userId));
+        const q = query(transactionsRef, where("user_id", "==", userId));
 
         // Execute the query
         const querySnapshot = await getDocs(q);
