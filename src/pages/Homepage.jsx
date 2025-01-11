@@ -5,24 +5,33 @@ import groups from "../assets/icons/groups.png"
 import room from "../assets/icons/room.png"
 import Button from "../components/Button"
 
+import { UserButton } from "@clerk/clerk-react";
+import { useEffect } from "react";
+
 function Homepage() {
+
+    useEffect(() => {
+        console.log("Homepage")
+    }, [])
+
     const handleClick = () => {
         alert(`Joining Room:`);
     };
     return (
-        <div className="p-6 space-y-2">
+        <div className="p-4 space-y-2">
             <div className="flex justify-between">
                 <img
                     src={shareo}
                     alt="Contoh Gambar"
                     className="h-5"
                 />
-                <p className="font-semibold text-lg">Hi, Rafi Abhista</p>
+                {/* <p className="font-semibold text-lg">Hi, Rafi Abhista</p> */}
+                <UserButton />
             </div>
             <div className="flex justify-between pt-2 items-center">
                 <div>
                     <p className="text-xl font-semibold text-gray-500">Your Balance</p>
-                    <p className="font-bold text-[45px]">Rp. 2.120.300</p>
+                    <p className="font-bold text-[30px]">Rp. 2.120.300</p>
                 </div>
 
                 <div className="bg-[#FFDB00] text-black text-sm font-bold py-2 px-4 rounded-lg">

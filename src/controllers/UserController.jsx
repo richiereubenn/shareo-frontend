@@ -1,6 +1,48 @@
 import db from "./firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+
+/**
+ * Create a new user in the `users` collection.
+ * @param {Object} userData - User data containing user_id, firstname, lastname, username, email, phone_number, password, and balance.
+ * @returns {Promise<Object>} Result of the operation.
+ */
+const createNewUser = async (userData) => {
+    try {
+        const { user_id, firstname, lastname, username, email, phone_number, password, balance } = userData;
+
+        // Validate required fields
+        if (!user_id || !firstname || !lastname || !username || !email || !phone_number || !password || balance === undefined) {
+            throw new Error("All fields are required.");
+        }
+
+        // User data object
+        const user = {
+            user_id,
+            firstname,
+            lastname,
+            username,
+            email,
+            phone_number,
+            password, // Store hashed password
+            balance,
+        };
+
+        // Add the user to Firestore
+        await setDoc(doc(collection(db, "users"), user_id), user);
+
+        return {
+            success: true,
+            message: "User created successfully!",
+        };
+    } catch (error) {
+        console.error("Error creating new user:", error);
+        return {
+            success: false,
+            message: "An error occurred while creating the user.",
+            error,
+        };
+    }
+};
 
 // Function to get user details by ID
 const getUserDetails = async (userId) => {
@@ -66,4 +108,4 @@ const getUserTransactions = async (userId) => {
 };
 
 
-export default { getUserDetails, getUserTransactions };
+export default { createNewUser, getUserDetails, getUserTransactions };
