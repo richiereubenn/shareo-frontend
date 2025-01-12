@@ -9,8 +9,10 @@ import { UserButton } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { getUserDetails, getUserTransactions } from "../controllers/UserController";
 import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 
 function Homepage() {
+    const navigate = useNavigate()
 
     const [transactions, setTransactions] = useState([])
     const [fbUser, setFbUser] = useState(null)
@@ -41,8 +43,12 @@ function Homepage() {
 
     }, [])
 
-    const handleClick = () => {
-        alert(`Joining Room:`);
+    const handleCreateRoom = () => {
+        navigate('/')
+    };
+
+    const handleJoinRoom = () => {
+        navigate('/scan-qr')
     };
     return (
         <div className="p-4 pt-8 space-y-2">
@@ -65,7 +71,7 @@ function Homepage() {
                     <p className="font-bold text-[30px]">Rp. {fbUser?.balance}</p>
                 </div>
 
-                <div className="bg-[#FFDB00] text-black text-sm font-bold py-2 px-4 rounded-lg">
+                <div onClick={() => navigate("/topup")} className="bg-[#FFDB00] text-black text-sm font-bold py-2 px-4 rounded-lg" >
                     <div className="flex gap-2 items-center">
                         <img
                             src={plus}
@@ -79,15 +85,15 @@ function Homepage() {
             <div className="flex gap-2">
                 <Button
                     text="Join Room"
-                    onClick={handleClick}
+                    onClick={handleJoinRoom}
                     icon={<img src={room} alt="Plus Icon" className="h-5" />} // Gunakan JSX <img>
                     bgColor="#4B1AD4"
                     textColor="#ffffff"
                     height="54px"
                 />
                 <Button
-                    text="Join Room"
-                    onClick={handleClick}
+                    text="Create Room"
+                    onClick={handleCreateRoom}
                     icon={<img src={groups} alt="Plus Icon" className="h-5" />} // Gunakan JSX <img>
                     bgColor="#000000"
                     textColor="#ffffff"
