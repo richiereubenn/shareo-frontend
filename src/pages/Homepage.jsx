@@ -12,6 +12,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 
 function Homepage() {
+    const navigate = useNavigate()
 
     const [transactions, setTransactions] = useState([])
     const [fbUser, setFbUser] = useState(null)
@@ -50,7 +51,7 @@ function Homepage() {
     const joinRoom = () => {
         navigate("/scan-qr")
     }
-
+    
     return (
         <div className="p-4 pt-8 space-y-2">
             <div className="flex justify-between items-center">
