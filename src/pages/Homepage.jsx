@@ -12,7 +12,6 @@ import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 
 function Homepage() {
-    const navigate = useNavigate()
 
     const [transactions, setTransactions] = useState([])
     const [fbUser, setFbUser] = useState(null)
