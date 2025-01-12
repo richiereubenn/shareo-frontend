@@ -15,6 +15,11 @@ function QRScanner() {
     }
   };
 
+  const back = () => {
+    console.log("Navigating back")
+    navigate("/home")
+  }
+
   // Fungsi untuk menangani error saat scanning
   const handleError = (err) => {
     console.error("QR Scanner Error:", err);  // Menangani error dan log error
@@ -29,14 +34,14 @@ function QRScanner() {
   return (
     <div className="p-4 font-poppins">
       {/* Tombol Kembali */}
-      <div className=" top-4 left-4">
-        <button
-          className="text-4B1AD4 text-3xl font-bold hover:opacity-80"
-          onClick={() => navigate("/home")} // Navigasi ke halaman Home
-        >
-          &#8592;
-        </button>
-      </div>
+      <button
+        className="top-4 left-4 text-3xl font-bold hover:opacity-80"
+        onClick={back} // Navigasi kembali
+      >
+        &#8592;
+      </button>
+      {/* <div className=" top-4 left-4">
+      </div> */}
 
       {/* Judul dan tombol "Using Code" */}
       <div className=" top-4 right-4 flex justify-between items-center my-2">

@@ -18,6 +18,7 @@ function Homepage() {
     const [fbUser, setFbUser] = useState(null)
 
     const { user } = useUser()
+    const navigate = useNavigate()
 
     useEffect(() => {
         console.log("Homepage")
@@ -43,13 +44,14 @@ function Homepage() {
 
     }, [])
 
-    const handleCreateRoom = () => {
-        navigate('/')
-    };
+    const createRoom = () => {
+        navigate("/scan-receipt")
+    }
 
-    const handleJoinRoom = () => {
-        navigate('/scan-qr')
-    };
+    const joinRoom = () => {
+        navigate("/scan-qr")
+    }
+    
     return (
         <div className="p-4 pt-8 space-y-2">
             <div className="flex justify-between items-center">
@@ -71,7 +73,7 @@ function Homepage() {
                     <p className="font-bold text-[30px]">Rp. {fbUser?.balance}</p>
                 </div>
 
-                <div onClick={() => navigate("/topup")} className="bg-[#FFDB00] text-black text-sm font-bold py-2 px-4 rounded-lg" >
+                <a href="/topup" className="bg-[#FFDB00] text-black text-sm font-bold py-2 px-4 rounded-lg">
                     <div className="flex gap-2 items-center">
                         <img
                             src={plus}
@@ -80,12 +82,12 @@ function Homepage() {
                         />
                         <p>Top Up</p>
                     </div>
-                </div>
+                </a>
             </div>
             <div className="flex gap-2">
                 <Button
                     text="Join Room"
-                    onClick={handleJoinRoom}
+                    onClick={joinRoom}
                     icon={<img src={room} alt="Plus Icon" className="h-5" />} // Gunakan JSX <img>
                     bgColor="#4B1AD4"
                     textColor="#ffffff"
@@ -93,7 +95,7 @@ function Homepage() {
                 />
                 <Button
                     text="Create Room"
-                    onClick={handleCreateRoom}
+                    onClick={createRoom}
                     icon={<img src={groups} alt="Plus Icon" className="h-5" />} // Gunakan JSX <img>
                     bgColor="#000000"
                     textColor="#ffffff"
@@ -101,27 +103,21 @@ function Homepage() {
                 />
             </div>
             <p className="font-semibold text-lg pt-2">Split History</p>
-            <Card
-                title="Bakso Joko Parte"
-                date="3 Januari 2024"
-                people={3}
-                total={120000}
-                paid={75}
-            />
-            <Card
-                title="Pizza Party"
-                date="10 Januari 2024"
-                people={5}
-                total={250000}
-                paid={50}
-            />
-            <Card
-                title="Pizza Party"
-                date="10 Januari 2024"
-                people={5}
-                total={250000}
-                paid={50}
-            />
+            {transactions.length > 0 ? (
+                transactions.map((transaction) => (
+                    <Card
+                        key={transaction.id} // Don't forget to add a key prop
+                        title={transaction.title}
+                        date={transaction.date}
+                        people={transaction.people}
+                        total={transaction.total}
+                        paid={transaction.paid}
+                    />
+                ))
+            ) : (
+                // What to show when there are no transactions
+                <p className="flex w-full items-center justify-center">No transactions found</p>
+            )}
         </div>
     )
 }
