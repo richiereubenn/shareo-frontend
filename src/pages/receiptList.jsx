@@ -11,30 +11,17 @@ const ReceiptList = () => {
     const [scanDate, setScanDate] = useState('');
     const [totals, setTotals] = useState({ subtotal: 0, tax: 0, total: 0 });
 
-    // Dummy
-    // const [items, setItems] = useState([
-    //     { name: 'Italian Steak & Fries', quantity: 1, price: 36.00, totalPrice: 36.00 },
-    //     { name: 'Beef Salad', quantity: 1, price: 29.50, totalPrice: 29.50 },
-    //     { name: 'Chicken Salad', quantity: 1, price: 28.50, totalPrice: 28.50 },
-    //     { name: 'Beef', quantity: 1, price: 38.50, totalPrice: 38.50 },
-    //     { name: 'Scrambled Eggs', quantity: 2, price: 13.50, totalPrice: 27.00 },
-    //     { name: 'Soup', quantity: 2, price: 17.50, totalPrice: 35.00 },
-    //     { name: 'Vanilla & Lemon Martini', quantity: 1, price: 18.50, totalPrice: 18.50 },
-    //     { name: 'Homemade Lemonade', quantity: 1, price: 6.75, totalPrice: 6.75 },
-    //     { name: 'Water', quantity: 2, price: 3.75, totalPrice: 7.50 }
-    // ]);
-
     useEffect(() => {
         if (location.state) {
             const { items = [], receiptName = '', scanDate = '' } = location.state;
-            setItems(items);
+            setItems(items || []);
             setReceiptName(receiptName);
             setScanDate(scanDate);
             if (items.length > 0) {
                 calculateTotals(items);
             }
         }
-    }, [location.state]);
+    }, [location.state]);    
 
     const calculateTotals = (items) => {
         if (!items) return;
@@ -44,21 +31,7 @@ const ReceiptList = () => {
         setTotals({ subtotal, tax, total });
     };
 
-    // const handleInputChange = (index, field, value) => {
-    //     const updatedItems = [...items];
-    //     updatedItems[index][field] = value;
-    //     setItems(updatedItems);
-    //     calculateTotals(updatedItems);
-    // };
-
-    // const handleInputChange = (index, field, value) => { 
-    //     const newItems = [...editableItems]; 
-    //     newItems[index][field] = value; 
-    //     setEditableItems(newItems); 
-    // };
-
-    const handleInputChange = (e, index, field) => {
-        const value = e.target.value;
+    const handleInputChange = (index, field, value) => {
         const updatedItems = [...items];
         updatedItems[index][field] = value;
 
@@ -74,21 +47,15 @@ const ReceiptList = () => {
         setIsEditing(!isEditing);
     };
 
-
     const handleSubmit = (e) => {
         e.preventDefault();
-        navigate('/selectItem', { state: { items, receiptName, scanDate, totals } });
+        navigate('/select-item', { state: { items, receiptName, scanDate, totals } });
     };
 
     return (
         <div className="p-8 bg-white">
-            {/* Real */}
             <h2 className="text-2xl font-bold mb-2 text-left">{receiptName}</h2>
             <p className="text-left text-gray-600 mb-8">{scanDate}</p>
-            {/* Dummy */}
-            {/* <h2 className="text-2xl font-bold mb-2 text-left">GO.Restaurant</h2>
-            <p className="text-left text-gray-600 mb-8">{scanDate}</p> */}
-            {/* Real */}
             <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-4 gap-1 mb-4">
                     <span className="font-semibold">Nama</span>
@@ -142,10 +109,10 @@ const ReceiptList = () => {
                 <div className="flex justify-between items-center mt-4">
                     <button
                         type="button"
-                        onClick={() => navigate(-1)}
+                        onClick={toggleEditing}
                         className="py-2 px-4 me-2 w-1/2 bg-black text-white rounded-full hover:bg-gray-700 transition duration-200"
                     >
-                        Edit
+                        {isEditing ? 'Save' : 'Edit'}
                     </button>
                     <button
                         type="submit"
@@ -155,7 +122,29 @@ const ReceiptList = () => {
                     </button>
                 </div>
             </form>
-            {/* Dummy */}
+        </div>
+    );
+};
+
+export default ReceiptList;
+
+
+
+
+    // Dummy
+    // const [items, setItems] = useState([
+    //     { name: 'Italian Steak & Fries', quantity: 1, price: 36.00, totalPrice: 36.00 },
+    //     { name: 'Beef Salad', quantity: 1, price: 29.50, totalPrice: 29.50 },
+    //     { name: 'Chicken Salad', quantity: 1, price: 28.50, totalPrice: 28.50 },
+    //     { name: 'Beef', quantity: 1, price: 38.50, totalPrice: 38.50 },
+    //     { name: 'Scrambled Eggs', quantity: 2, price: 13.50, totalPrice: 27.00 },
+    //     { name: 'Soup', quantity: 2, price: 17.50, totalPrice: 35.00 },
+    //     { name: 'Vanilla & Lemon Martini', quantity: 1, price: 18.50, totalPrice: 18.50 },
+    //     { name: 'Homemade Lemonade', quantity: 1, price: 6.75, totalPrice: 6.75 },
+    //     { name: 'Water', quantity: 2, price: 3.75, totalPrice: 7.50 }
+    // ]);
+
+    {/* Dummy */}
             {/* <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-4 gap-1 mb-4" style={{ gridTemplateColumns: '3fr 1fr 2fr 2fr' }}>
                     <span className="font-semibold">Nama</span>
@@ -225,8 +214,3 @@ const ReceiptList = () => {
                     </button>
                 </div>
             </form> */}
-        </div>
-    );
-};
-
-export default ReceiptList;

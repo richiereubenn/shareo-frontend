@@ -12,17 +12,19 @@ const ScanReceipt = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const startCamera = () => {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode } })
-                .then(stream => {
-                    videoRef.current.srcObject = stream;
-                    videoRef.current.play();
-                })
-                .catch(err => {
-                    console.error("Error accessing webcam: ", err);
-                });
+        const startCamera = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
+                videoRef.current.srcObject = stream;
+                videoRef.current.onloadedmetadata = async () => {
+                    await videoRef.current.play();
+                };
+            } catch (err) {
+                console.error("Error accessing webcam: ", err);
+            }
         };
         startCamera();
+
         return () => {
             if (videoRef.current && videoRef.current.srcObject) {
                 const stream = videoRef.current.srcObject;
@@ -32,16 +34,12 @@ const ScanReceipt = () => {
         };
     }, [facingMode]);
 
-    // const toggleCamera = () => {
-    //     setFacingMode(prevMode => (prevMode === 'user' ? 'environment' : 'user'));
-    // };
-
     const parseText = (text) => {
         console.log("OCR Text:", text);
 
-        const itemPattern = /(\d+)\s+(.+?)\s+-\s+(\d+\.\d+)/g;
+        const itemPattern = /(\w+(?:\s\w+)*)\s+-\s+\$?(\d+\.\d+)/g;
         const namePattern = /Bill Number:\s*(\d+)/i;
-        const datePattern = /Date:\s*(\d{2}[A-Z]{3}\d{4}\s\d{2}:\d{2}:\d{2})/i;
+        const datePattern = /Date and Time:\s*(\d+\w+\d{4}\s\d{2}:\d{2}:\d{2})/i;
         const matches = [];
         let match;
         let receiptName = '';
@@ -59,9 +57,10 @@ const ScanReceipt = () => {
 
         while ((match = itemPattern.exec(text)) !== null) {
             matches.push({
-                quantity: match[1].trim(),
-                name: match[2].trim(),
-                price: match[3].trim()
+                name: match[1].trim(),
+                quantity: 1, 
+                price: parseFloat(match[2].trim()),
+                totalPrice: parseFloat(match[2].trim())
             });
         }
 
@@ -80,13 +79,13 @@ const ScanReceipt = () => {
 
     const processOCR = (dataUrl) => {
         Tesseract.recognize(dataUrl, 'eng', {
-            logger: (m) => console.log(m)
+            logger: (m) => console.log(m),
+            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.$:'
         }).then(({ data: { text } }) => {
             console.log("OCR Text:", text);
-            const { matches, receiptName, receiptDate } = parseText(text);
+            const matches = parseText(text);
             setOcrData(matches);
-            setReceiptName(receiptName);
-        });
+        });        
     };
 
     const handleFileChange = (event) => {
@@ -109,7 +108,7 @@ const ScanReceipt = () => {
             year: 'numeric'
         });
         console.log("Navigating with data:", ocrData);
-        navigate('/receiptList', { state: { items: ocrData, receiptName, scanDate } });
+        navigate('/receipt-list', { state: { items: ocrData, receiptName, scanDate } });
     };
 
     return (
@@ -122,16 +121,10 @@ const ScanReceipt = () => {
                         <div className="flex space-x-4 mt-4">
                             <button
                                 onClick={capturePhoto}
-                                className="bg-gray-400 text-white py-2 px-4 w-12 h-12 flex items-center justify-center"
-                            >
-                                
-                            </button>
-                            {/* <button
-                                onClick={toggleCamera}
                                 className="bg-gray-400 text-white py-2 px-4 rounded-full w-12 h-12 flex items-center justify-center"
                             >
                                 
-                            </button> */}
+                            </button>
                         </div>
                     </div>
                     <div className='flex justify-center'>

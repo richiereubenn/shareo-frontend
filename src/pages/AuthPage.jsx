@@ -3,8 +3,7 @@ import { User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import shareoLogo from "../assets/images/Shareo.png";
 import { useSignIn, useSignUp } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import UserController from '../controllers/UserController';
-const { createNewUser } = UserController;
+import { createNewUser } from '../controllers/UserController';
 
 export default function AuthPage() {
   const [currentView, setCurrentView] = useState("login");
