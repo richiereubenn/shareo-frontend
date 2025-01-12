@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { topUp } from '../controllers/UserController';
+import { useUser } from "@clerk/clerk-react";
 
 export default function TopUpPage() {
   const navigate = useNavigate();
   const [selectedAmount, setSelectedAmount] = useState('');
   const [customAmount, setCustomAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('');
+  const [fbUser, setFbUser] = useState(null)
+  const { user } = useUser()
+
 
   const amounts = [
     '50.000',
@@ -47,23 +52,45 @@ export default function TopUpPage() {
     return new Intl.NumberFormat('id-ID').format(amount);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const amount = selectedAmount || customAmount;
+
     if (amount && selectedMethod) {
-      const transactionData = {
-        id: Math.random().toString(36).substr(2, 9),
-        date: new Date().toLocaleDateString('id-ID', {
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric'
-        }),
-        amount:(parseFloat(amount.replace(/\./g, ''))).toLocaleString('id-ID'),
-        total:(parseFloat(amount.replace(/\./g, ''))).toLocaleString('id-ID'),
-        status: 'success'
-      };
-      navigate('/success', { state: { type: 'topup', transactionData } });
+        try {
+            const parsedAmount = parseFloat(amount.replace(/\./g, ''));
+            const adminFee = 1500;
+            const totalAmount = parsedAmount + adminFee;
+
+            const userId = user.id;
+
+            const result = await topUp(userId, parsedAmount, selectedMethod);
+
+            if (result.success) {
+                navigate('/success', {
+                    state: {
+                        type: 'topup',
+                        transactionData: {
+                            id: result.transactionId,
+                            date: new Date().toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric',
+                            }),
+                            amount: parsedAmount.toLocaleString('id-ID'),
+                            adminFee: adminFee.toLocaleString('id-ID'),
+                            total: totalAmount.toLocaleString('id-ID'),
+                            status: 'success',
+                        },
+                    },
+                });
+            } else {
+                console.error('Top-up failed:', result.message);
+            }
+        } catch (error) {
+            console.error('Error during top-up:', error);
+        }
     }
-  };
+};
 
   return (
     <div className="min-h-screen bg-[#f8f8f8]">
@@ -77,7 +104,7 @@ export default function TopUpPage() {
       <div className="p-4 max-w-md mx-auto">
         <div className="mb-6">
           <p className="text-sm text-[#595959]">Saldo</p>
-          <p className="text-xl font-medium text-[#1e1e1e]">Rp 100.000</p>
+          <p className="text-xl font-medium text-[#1e1e1e]">{fbUser?.balance}</p>
         </div>
 
         <div className="mb-6">
