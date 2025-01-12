@@ -57,9 +57,9 @@ const PaymentRecap = () => {
                 <span>Home</span>
             </button>
             <h1 className="text-3xl font-bold mb-2 text-left">Recap Payment</h1>
-            {/* <p className="text-center text-gray-600 mb-4">{scanDate}</p> */}
-            <p className="text-left text-gray-600 mb-6">3 Januari 2025</p>
-            {/* <div className="mb-8">
+            <p className="text-center text-gray-600 mb-4">{scanDate}</p>
+            {/* <p className="text-left text-gray-600 mb-6">3 Januari 2025</p> */}
+            <div className="mb-8">
                 {payments.map((payment, index) => (
                     <div key={index} className="mb-6">
                         <div className="flex justify-between items-center mb-2">
@@ -77,8 +77,8 @@ const PaymentRecap = () => {
                         )}
                     </div>
                 ))}
-            </div> */}
-            {items.map((item, index) => (
+            </div>
+            {/* {items.map((item, index) => (
                 <div key={index} className="border-b border-gray-300 pb-4 mb-4"> 
                     <div className="flex items-center mb-2"> 
                         <div className="w-10 h-10 bg-gray-300 rounded-full mr-4"></div> 
@@ -104,14 +104,14 @@ const PaymentRecap = () => {
                         <p>Rp. 230</p>
                     </div>
                 </div>
-            ))}
-            {/* <div className="mt-8 text-center">
+            ))} */}
+            <div className="mt-8 text-center">
                 <h3 className="text-lg font-semibold mb-2">Summary</h3>
                 <p className="text-md">Sudah bayar: {summary.paid}</p>
                 <p className="text-md">Belum bayar: {summary.unpaid}</p>
                 <p className="text-md">Tagihan belum terbayar: Rp {summary.unpaidTotal.toLocaleString()}</p>
-            </div> */}
-            <div className='flex justify-between font-semibold'>
+            </div>
+            {/* <div className='flex justify-between font-semibold'>
                 <p>Sudah bayar </p>
                 <p>1</p>
             </div>
@@ -122,7 +122,7 @@ const PaymentRecap = () => {
             <div className='flex justify-between text-indigo-700 font-bold'>
                 <p>Tagihan belum terbayar</p>
                 <p>Rp 230.000</p>
-            </div>
+            </div> */}
         </div>
     );
 };

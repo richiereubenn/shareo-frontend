@@ -65,11 +65,11 @@ const SelectItem = () => {
                     </svg>
                 </div>
             </div>
-            {/* <p className="text-left text-gray-600 mb-1">{scanDate}</p>
-            <p className="text-left text-indigo-700 mb-4">Created by: {receiptName}</p> */}
+            <p className="text-left text-gray-600 mb-1">{scanDate}</p>
+            <p className="text-left text-indigo-700 mb-4">Created by: {receiptName}</p>
             {/* Dummy */}
-            <p className="text-left text-gray-600 mb-1">3 Januari 2025</p>
-            <p className="text-left text-indigo-700 mb-6">Created by: Rafi</p>
+            {/* <p className="text-left text-gray-600 mb-1">3 Januari 2025</p>
+            <p className="text-left text-indigo-700 mb-6">Created by: Rafi</p> */}
             <form>
                 {items.map((item, index) => (
                     <div key={index} className="mb-4">

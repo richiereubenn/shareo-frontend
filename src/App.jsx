@@ -7,7 +7,7 @@ import PaymentPage from "./pages/PaymentPage";
 import TopUpPage from "./pages/TopUpPage";
 import SuccessPage from "./pages/SuccessPage";
 import ScanReceipt from "./pages/ScanReceipt";
-import ReceiptList from "./pages/ReceiptList";
+import ReceiptList from "./pages/receiptList";
 import SelectItem from "./pages/SelectItem";
 import PaymentRecap from "./pages/PaymentRecap";
 import InvitationCode from "./pages/InvitationCodePage";
