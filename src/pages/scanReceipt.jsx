@@ -231,30 +231,28 @@ const ScanReceipt = () => {
         }
     };
 
-    // Upload the captured photo to Veryfi
     const processOCR = async (photoData) => {
         console.log("Processing receipt...");
-        const blob = await fetch(photoData).then((res) => res.blob());
-
-        const formData = new FormData();
-        formData.append("file", blob, "receipt.png");
-
-        const config = {
-            method: "post",
-            maxBodyLength: Infinity,
-            url: "https://api.veryfi.com/api/v8/partner/documents/",
-            headers: {
-                "Content-Type": "multipart/form-data",
-                "Accept": "application/json",
-                "CLIENT-ID": "vrfTOGLGPcV0jRLEWUUn1HsLlAhfIseICrONOG0", // Replace with your CLIENT-ID
-                "AUTHORIZATION": "apikey smurfoxalion:919b3541a92862707f0d813c94ca2859", // Replace with your API key
-            },
-            data: formData,
-        };
-
         try {
-            console.log("Sending request to Veryfi...");
-            const response = await axios(config);
+            // Convert base64 to Blob
+            const base64Response = await fetch(photoData);
+            const blob = await base64Response.blob();
+
+            // Create file from blob
+            const file = new File([blob], "receipt.jpg", { type: "image/jpeg" });
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await axios({
+                method: "post",
+                url: "https://c24sxmgp-3000.asse.devtunnels.ms/api/process-receipt",
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                data: formData,
+            });
+
             setResult(response.data);
             console.log("Receipt processed successfully:", response.data);
         } catch (error) {
