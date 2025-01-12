@@ -13,7 +13,6 @@ import PaymentRecap from "./pages/PaymentRecap";
 import InvitationCode from "./pages/InvitationCodePage";
 import JoinRoom from "./pages/JoinRoomPage";
 import QRScanner from "./pages/QRScannerPage";
-import ProtectedRoute from "./components/ProtectedRoute";
 import { useUser } from "@clerk/clerk-react";
 
 function App() {
@@ -22,9 +21,9 @@ function App() {
 
   const { isSignedIn, user } = useUser()
   if (isSignedIn) {
-    console.log(user.firstName)
-    console.log("Navigating to home ... ")
-    navigate("/home")
+    // console.log(user.firstName)
+    // console.log("Navigating to home ... ")
+    // navigate("/home")
   }
 
   const [transactionData, setTransactionData] = useState(null);

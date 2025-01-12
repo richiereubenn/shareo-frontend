@@ -107,5 +107,4 @@ const getUserTransactions = async (userId) => {
     }
 };
 
-
-export default { createNewUser, getUserDetails, getUserTransactions };
+export { createNewUser, getUserDetails, getUserTransactions };

@@ -3,6 +3,7 @@ import { User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import shareoLogo from "../assets/images/Shareo.png";
 import { useSignIn, useSignUp } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
+
 import { createNewUser } from "../controllers/UserController";
 
 export default function AuthPage() {
@@ -214,28 +215,6 @@ function RegisterForm({ onSwitch }) {
       // send the email.
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
 
-      const clerkUserId = signUpResponse.id;
-      console.log("Sign up response id : " + signUpResponse.id)
-      console.log("clerkUserId : " + clerkUserId)
-
-      // Save the user to Firebase Firestore
-      const firebaseUser = {
-        user_id: clerkUserId,
-        firstname: firstName,
-        lastname: lastName,
-        username: username, // Default username from email prefix
-        email,
-        phone_number: phone, // Default empty phone number if not provided
-        password, // Optional: You may choose not to save the raw password in Firestore
-        balance: 0, // Default initial balance
-      };
-
-      const firebaseResponse = await createNewUser(firebaseUser);
-
-      if (!firebaseResponse.success) {
-        console.error("Failed to save user in Firebase:", firebaseResponse.message);
-      }
-
       // change the UI to our pending section.
       setPendingVerification(true);
     } catch (err) {
@@ -260,6 +239,29 @@ function RegisterForm({ onSwitch }) {
         console.log(JSON.stringify(completeSignUp, null, 2));
       }
       if (completeSignUp.status === 'complete') {
+
+        const clerkUserId = completeSignUp.createdUserId;
+        console.log("Sign up response id : " + completeSignUp.id)
+        console.log("clerkUserId : " + clerkUserId)
+  
+        // Save the user to Firebase Firestore
+        const firebaseUser = {
+          user_id: clerkUserId,
+          firstname: firstName,
+          lastname: lastName,
+          username: username, // Default username from email prefix
+          email,
+          phone_number: phone, // Default empty phone number if not provided
+          password, // Optional: You may choose not to save the raw password in Firestore
+          balance: 0, // Default initial balance
+        };
+  
+        const firebaseResponse = await createNewUser(firebaseUser);
+  
+        if (!firebaseResponse.success) {
+          console.error("Failed to save user in Firebase:", firebaseResponse.message);
+        }
+
         await setActive({ session: completeSignUp.createdSessionId });
         router('/home');
       }
