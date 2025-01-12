@@ -11,7 +11,7 @@ function QRScanner() {
     if (data && data.text) {
       setScanResult(data.text);
       // Jika scan berhasil, langsung navigasi ke halaman berdasarkan hasil scan
-      navigate(`/room/${data.text}`);
+      navigate(`/select-item/${data.text}`);
     }
   };
 
@@ -31,8 +31,8 @@ function QRScanner() {
       {/* Tombol Kembali */}
       <div className=" top-4 left-4">
         <button
-          className=" text-3xl font-bold hover:opacity-80"
-          onClick={() => window.history.back()} // Navigasi kembali
+          className="text-4B1AD4 text-3xl font-bold hover:opacity-80"
+          onClick={() => navigate("/home")} // Navigasi ke halaman Home
         >
           &#8592;
         </button>

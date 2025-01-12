@@ -1,16 +1,15 @@
 import db from "./firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, addDoc } from "firebase/firestore";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { addDoc, doc, updateDoc } from "firebase/firestore";
 
 const createRoomAndAddItems = async (userId, items) => {
     try {
-      // Step 1: Insert into `rooms` table
+      
       const roomData = {
         user_id: userId,
-        room_name: null, // Initially null
+        room_name: null, 
         date: new Date().toISOString(),
-        status: "open", // Initially 'open'
+        status: "open", 
       };
   
       const roomRef = await addDoc(collection(db, "rooms"), roomData);
@@ -49,4 +48,30 @@ const createRoomAndAddItems = async (userId, items) => {
     }
   };
 
-  export default { createRoomAndAddItems };
+  const getRoomData = async (roomId) => {
+    try {
+      const roomRef = doc(db, "rooms", roomId);
+      const roomSnap = await getDoc(roomRef);
+  
+      if (roomSnap.exists()) {
+        return {
+          success: true,
+          data: roomSnap.data(),
+        };
+      } else {
+        return {
+          success: false,
+          message: "Room not found.",
+        };
+      }
+    } catch (error) {
+      console.error("Error fetching room data:", error);
+      return {
+        success: false,
+        message: "An error occurred while fetching the room data.",
+        error,
+      };
+    }
+  };
+
+  export { createRoomAndAddItems, getRoomData };
