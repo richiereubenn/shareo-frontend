@@ -36,36 +36,52 @@ const ScanReceipt = () => {
 
     const parseText = (text) => {
         console.log("OCR Text:", text);
-
-        const itemPattern = /(\w+(?:\s\w+)*)\s+-\s+\$?(\d+\.\d+)/g;
+    
+        // Regular expression to match the provided format
+        const itemPattern = /\s*\d+\s+([a-zA-Z&\s]+)\s+(\d+\.\d{2})/g;
         const namePattern = /Bill Number:\s*(\d+)/i;
         const datePattern = /Date and Time:\s*(\d+\w+\d{4}\s\d{2}:\d{2}:\d{2})/i;
         const matches = [];
         let match;
         let receiptName = '';
         let receiptDate = '';
-
+    
         const nameMatch = namePattern.exec(text);
         if (nameMatch) {
             receiptName = `Bill No: ${nameMatch[1].trim()}`;
+            setReceiptName(receiptName);
         }
-
+    
         const dateMatch = datePattern.exec(text);
         if (dateMatch) {
             receiptDate = dateMatch[1].trim();
         }
-
+    
         while ((match = itemPattern.exec(text)) !== null) {
+            const itemName = match[1].trim();
+            const itemPrice = parseFloat(match[2].trim());
+    
+            // Determine quantity based on the name (e.g., "Scrambled Eggs (2)")
+            const quantityPattern = /\((\d+)\)$/;
+            const quantityMatch = quantityPattern.exec(itemName);
+            let quantity = 1;  // Default quantity
+    
+            if (quantityMatch) {
+                quantity = parseInt(quantityMatch[1].trim());
+            }
+    
+            const cleanName = itemName.replace(quantityPattern, '').trim();
+    
             matches.push({
-                name: match[1].trim(),
-                quantity: 1, 
-                price: parseFloat(match[2].trim()),
-                totalPrice: parseFloat(match[2].trim())
+                name: cleanName,
+                quantity: quantity,
+                price: itemPrice,
+                totalPrice: itemPrice * quantity
             });
         }
-
+    
         console.log("Parsed Items:", matches);
-        return { matches, receiptName, receiptDate };
+        return { items: matches, receiptName, receiptDate };
     };
 
     const capturePhoto = () => {
@@ -83,8 +99,9 @@ const ScanReceipt = () => {
             tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.$:'
         }).then(({ data: { text } }) => {
             console.log("OCR Text:", text);
-            const matches = parseText(text);
-            setOcrData(matches);
+            const parsedData = parseText(text);
+            setOcrData(parsedData.items);
+            setReceiptName(parsedData.receiptName);
         });        
     };
 
@@ -107,9 +124,9 @@ const ScanReceipt = () => {
             month: 'long',
             year: 'numeric'
         });
-        console.log("Navigating with data:", ocrData);
+        console.log("Navigating with data:", ocrData, receiptName, scanDate);
         navigate('/receipt-list', { state: { items: ocrData, receiptName, scanDate } });
-    };
+    };    
 
     return (
         <div className="flex flex-col p-8">

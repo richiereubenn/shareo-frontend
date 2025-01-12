@@ -13,6 +13,7 @@ const ReceiptList = () => {
 
     useEffect(() => {
         if (location.state) {
+            console.log("Location state:", location.state);
             const { items = [], receiptName = '', scanDate = '' } = location.state;
             setItems(items || []);
             setReceiptName(receiptName);
@@ -21,15 +22,16 @@ const ReceiptList = () => {
                 calculateTotals(items);
             }
         }
-    }, [location.state]);    
-
+    }, [location.state]);
+    
+    
     const calculateTotals = (items) => {
         if (!items) return;
         const subtotal = items.reduce((acc, item) => acc + (parseFloat(item.price) * parseInt(item.quantity)), 0);
         const tax = subtotal * 0.1;
         const total = subtotal + tax;
         setTotals({ subtotal, tax, total });
-    };
+    };    
 
     const handleInputChange = (index, field, value) => {
         const updatedItems = [...items];
