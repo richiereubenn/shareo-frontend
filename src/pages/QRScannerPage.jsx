@@ -11,7 +11,7 @@ function QRScanner() {
     if (data && data.text) {
       setScanResult(data.text);
       // Jika scan berhasil, langsung navigasi ke halaman berdasarkan hasil scan
-      navigate(`/room/${data.text}`);
+      navigate(`/select-item/${data.text}`);
     }
   };
 
