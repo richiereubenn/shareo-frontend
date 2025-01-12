@@ -5,24 +5,64 @@ import groups from "../assets/icons/groups.png"
 import room from "../assets/icons/room.png"
 import Button from "../components/Button"
 
+import { UserButton } from "@clerk/clerk-react";
+import { useEffect, useState } from "react";
+import { getUserDetails, getUserTransactions } from "../controllers/UserController";
+import { useUser } from "@clerk/clerk-react";
+
 function Homepage() {
+
+    const [transactions, setTransactions] = useState([])
+    const [fbUser, setFbUser] = useState(null)
+
+    const { user } = useUser()
+
+    useEffect(() => {
+        console.log("Homepage")
+        console.log("Current user : " + user.id)
+        console.log("Firebase user_id : " + user.id)
+
+        const getTransactions = async () => {
+            const transactions = await getUserTransactions(user.id)
+            console.log("Transactions : ", transactions)
+            setTransactions(transactions.data)
+        }
+
+        const fetchUserDetails = async () => {
+            const userDetails = await getUserDetails(user.id)
+            console.log("User details : ", userDetails)
+            setFbUser(userDetails.data)
+        }
+
+        fetchUserDetails()
+        getTransactions()
+        console.log("Transactions use state : ", transactions)
+        console.log("Firebase user : ", fbUser)
+
+    }, [])
+
     const handleClick = () => {
         alert(`Joining Room:`);
     };
     return (
-        <div className="p-6 space-y-2">
-            <div className="flex justify-between">
+        <div className="p-4 pt-8 space-y-2">
+            <div className="flex justify-between items-center">
                 <img
                     src={shareo}
                     alt="Contoh Gambar"
                     className="h-5"
                 />
-                <p className="font-semibold text-lg">Hi, Rafi Abhista</p>
+                {/* <p className="font-semibold text-lg">Hi, Rafi Abhista</p> */}
+                <UserButton appearance={{
+                    elements: {
+                        userButtonAvatarBox: 'flex items-center justify-center w-12 h-12',
+                    }
+                }} />
             </div>
             <div className="flex justify-between pt-2 items-center">
                 <div>
                     <p className="text-xl font-semibold text-gray-500">Your Balance</p>
-                    <p className="font-bold text-[45px]">Rp. 2.120.300</p>
+                    <p className="font-bold text-[30px]">Rp. {fbUser.balance}</p>
                 </div>
 
                 <div className="bg-[#FFDB00] text-black text-sm font-bold py-2 px-4 rounded-lg">
