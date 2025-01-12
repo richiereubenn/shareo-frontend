@@ -62,7 +62,7 @@ function Homepage() {
             <div className="flex justify-between pt-2 items-center">
                 <div>
                     <p className="text-xl font-semibold text-gray-500">Your Balance</p>
-                    <p className="font-bold text-[30px]">Rp. {fbUser.balance}</p>
+                    <p className="font-bold text-[30px]">Rp. {fbUser?.balance}</p>
                 </div>
 
                 <div className="bg-[#FFDB00] text-black text-sm font-bold py-2 px-4 rounded-lg">
