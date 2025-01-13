@@ -91,7 +91,7 @@ function App() {
         }
       />
       <Route
-        path="/select-item/:roomCode" 
+        path="/select-item/:roomId" 
         element={
           <SignedIn>
             <SelectItem />
