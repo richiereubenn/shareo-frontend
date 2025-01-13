@@ -217,12 +217,12 @@ const ReceiptList = () => {
                 <div className="flex justify-between mt-6">
                     <div className="text-left">
                         <p className="text-lg">Jumlah</p>
-                        <p className="text-lg">Tax</p>
+                        {/* <p className="text-lg">Tax</p> */}
                         <p className="text-lg font-bold text-indigo-700">Jumlah Total</p>
                     </div>
                     <div className="text-right">
                         <p className="text-lg">Rp 227.75</p>
-                        <p className="text-lg">Rp 15</p>
+                        {/* <p className="text-lg">Rp 15</p> */}
                         <p className="text-lg font-bold text-indigo-700">Rp 242.75</p>
                     </div>
                 </div>
