@@ -116,4 +116,37 @@ const getItemsByRoomId = async (roomId) => {
   }
 };
 
-export { createRoomAndAddItems, getRoomData, getItemsByRoomId };
+const getRoomsByUserId = async (userId) => {
+  try {
+      // Reference to the rooms collection
+      const roomsCollectionRef = collection(db, "rooms");
+
+      // Query to find rooms where the user ID matches
+      const q = query(roomsCollectionRef, where("user_id", "==", userId));
+
+      // Execute the query
+      const querySnapshot = await getDocs(q);
+
+      // Extract rooms data
+      const rooms = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+      }));
+
+      // Return the fetched rooms
+      return {
+          success: true,
+          message: "Rooms fetched successfully",
+          data: rooms,
+      };
+  } catch (error) {
+      console.error("Error fetching rooms by user ID:", error);
+      return {
+          success: false,
+          message: "An error occurred while fetching rooms.",
+          error: error.message,
+      };
+  }
+};
+
+export { createRoomAndAddItems, getRoomData, getItemsByRoomId, getRoomsByUserId };

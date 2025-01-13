@@ -3,6 +3,10 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getItemsByRoomId, getRoomData } from '../controllers/RoomController';
 import { useUser } from '@clerk/clerk-react';
 
+import db from '../controllers/firebaseConfig';
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+
+
 const SelectItem = () => {
     const { roomId } = useParams();
     const location = useLocation();
@@ -15,19 +19,26 @@ const SelectItem = () => {
     const [roomData, setRoomData] = useState(null);
     const [users, setUsers] = useState(['aaa', 'bbb'])
     const { user } = useUser()
+    const [itemUserMapping, setItemUserMapping] = useState({});
 
     useEffect(() => {
-        // if (location.state) {
-        //     const { items = [], receiptName = '', scanDate = '' } = location.state;
-        //     setItems(items);
-        //     setReceiptName(receiptName);
-        //     setScanDate(scanDate);
-        //     if (items.length > 0) {
-        //         calculateTotals(items);
-        //     }
-        // }
-        // }, [location.state]);
+        const q = query(collection(db, "item_user"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = {};
+            snapshot.forEach((doc) => {
+                const { item_id, user_id } = doc.data();
+                if (!data[item_id]) {
+                    data[item_id] = [];
+                }
+                data[item_id].push(user_id);
+            });
+            setItemUserMapping(data);
+        });
 
+        return () => unsubscribe(); // Clean up the listener
+    }, []);
+
+    useEffect(() => {
 
         console.log("User : " + user.firstName)
         console.log("RoomId : " + roomId)
@@ -104,11 +115,10 @@ const SelectItem = () => {
         navigate('/payment-recap', { state: { payments: paymentRecapData, scanDate } });
     };
 
-    const handleItemClick = async (data) => {
-        // const result = await addItemToUser({ item_id: item.item_id, user_id: user.id, room_id: roomId });
-        const result = await addItemToUser(data);
-        console.log("Result:", result);
-    };
+    // const handleItemClick = async (data) => {
+    //     const result = await addItemToUser(data);
+    //     console.log("Result:", result);
+    // };
 
     return (
         <div className="p-8 bg-white">
@@ -140,21 +150,6 @@ const SelectItem = () => {
                             <h3 className="text-lg font-semibold">{item.item_name}</h3>
                             <h3 className="text-lg font-semibold">{item.item_qty}</h3>
                             <div className="flex items-center">
-                                {/* <button
-                                    type="button"
-                                    onClick={() => handleQuantityChange(index, -1)}
-                                    className="py-1 px-3 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition duration-200"
-                                >
-                                    -
-                                </button>
-                                <span className="mx-2">{item.quantity}</span>
-                                <button
-                                    type="button"
-                                    onClick={() => handleQuantityChange(index, 1)}
-                                    className="py-1 px-3 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition duration-200"
-                                >
-                                    +
-                                </button> */}
                             </div>
                             <span>Rp {item.item_price}</span>
                         </div>
@@ -167,6 +162,15 @@ const SelectItem = () => {
                         <hr className="my-4 border-gray-300" />
                     </div>
                 ))}
+
+
+                {/* {Object.keys(itemUserMapping).map((itemId) => (
+                    <div key={itemId}>
+                        <h3>{`Item ${itemId}`}</h3>
+                        <p>{`Users: ${itemUserMapping[itemId].join(", ")}`}</p>
+                    </div>
+                ))} */}
+
                 <div className="flex justify-between mt-8 text-center">
                     <h3 className="text-lg font-bold mb-2 text-indigo-700">Total Tagihan Anda</h3>
                     <p className="text-2xl font-bold text-indigo-700">Rp {totals.total.toFixed(2)}</p>
