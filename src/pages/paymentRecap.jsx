@@ -50,7 +50,7 @@ const PaymentRecap = () => {
 
     return (
         <div className="p-8 bg-white">
-            <button onClick={() => navigate('/')} className="mb-4 flex items-center space-x-2">
+            <button onClick={() => navigate('/home')} className="mb-4 flex items-center space-x-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                 </svg> 

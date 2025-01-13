@@ -132,7 +132,7 @@ function App() {
       />
 
       {/* Redirect if route not found */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
 }

@@ -274,23 +274,24 @@ const ScanReceipt = () => {
     };
 
     return (
-        <div className="receipt-uploader">
-            <h1>Upload Receipt</h1>
+        <div className="receipt-uploader flex flex-col w-full h-screen items-center justify-start p-12">
+            <h1 className="font-bold p-4 text-2xl">Upload Receipt</h1>
 
             {/* Video Feed */}
-            <video ref={videoRef} style={{ width: "100%", maxHeight: "300px" }} />
+            <video ref={videoRef} style={{ width: "100%", maxHeight: "1800px", borderRadius: "10px" }} />
 
             {/* Canvas (hidden, used for capturing the image) */}
             <canvas ref={canvasRef} style={{ display: "none" }} />
 
             {/* Capture Button */}
-            <button onClick={capturePhoto}>Capture Photo</button>
+            <button onClick={capturePhoto} className="bg-blue-500 text-white py-8 px-4 rounded-full w-full mt-4 text-center">Capture Photo</button>
 
             {/* Display Captured Image */}
             {image && (
                 <div>
-                    <h3>Captured Photo:</h3>
-                    <img src={image} alt="Captured Receipt" style={{ maxWidth: "100%" }} />
+                    {/* <h3>Captured Photo:</h3>
+                    <img src={image} alt="Captured Receipt" style={{ maxWidth: "100%" }} /> */}
+                    <h1>Processing image ...</h1>
                 </div>
             )}
 
