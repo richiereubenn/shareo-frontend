@@ -161,7 +161,7 @@ export const topUp = async (userId, amount, paymentMethod) => {
     try {
         const transactionId = `${userId}-${Date.now()}`;
 
-        const transactionRef = doc(db, 'transactions', transactionId);
+        const transactionRef = doc(db, 'topups', transactionId);
 
         const transactionData = {
             userId,

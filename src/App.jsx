@@ -83,7 +83,7 @@ function App() {
         }
       />
       <Route
-        path="/receipt-list"
+        path="/receipt-list/:roomId"
         element={
           <SignedIn>
             <ReceiptList />

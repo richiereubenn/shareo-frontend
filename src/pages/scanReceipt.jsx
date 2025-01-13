@@ -164,12 +164,17 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
+import { createRoomAndAddItems } from "../controllers/RoomController";
+import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 
 const ScanReceipt = () => {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const [image, setImage] = useState(null);
     const [result, setResult] = useState(null);
+    const { user } = useUser()
+    const navigate = useNavigate()
 
     // Start the camera when the component is mounted
     useEffect(() => {
@@ -255,6 +260,14 @@ const ScanReceipt = () => {
 
             setResult(response.data);
             console.log("Receipt processed successfully:", response.data);
+            console.log("Receipt processed successfully:", user.id, response.data.line_items);
+            const createRoom = await createRoomAndAddItems(user.id, response.data.line_items, response.data.ocr_text.toString().split('\n')[0]);
+            console.log("Room created:", createRoom);
+            if (createRoom.success) {
+                navigate(`/receipt-list/${createRoom.roomId}`);
+            } else {
+                console.log("Error creating room:", createRoom.message);
+            }
         } catch (error) {
             console.error("Error processing receipt:", error);
         }
