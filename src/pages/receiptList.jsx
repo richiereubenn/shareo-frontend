@@ -127,28 +127,28 @@ const ReceiptList = () => {
                     <div key={index} className="grid grid-cols-4 gap-2 mb-2">
                         <input
                             type="text"
-                            value={item.name}
+                            value={item.item_name}
                             disabled={!isEditing}
                             onChange={(e) => handleInputChange(index, 'name', e.target.value)}
                             className="self-center"
                         />
                         <input
                             type="number"
-                            value={item.quantity}
+                            value={item.item_qty}
                             disabled={!isEditing}
                             onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
                             className="self-center"
                         />
                         <input
                             type="text"
-                            value={item.price}
+                            value={item.item_price}
                             disabled={!isEditing}
                             onChange={(e) => handleInputChange(index, 'price', e.target.value)}
                             className="self-center"
                         />
                         <input
                             type="text"
-                            value={(parseFloat(item.price) * parseInt(item.quantity)).toFixed(2)}
+                            value={(parseFloat(item.item_price) * parseInt(item.item_qty))}
                             disabled
                             className="self-center"
                         />
@@ -169,10 +169,10 @@ const ReceiptList = () => {
                 <div className="flex justify-between items-center mt-4">
                     <button
                         type="button"
-                        onClick={() => navigate(-1)}
+                        onClick={toggleEditing}
                         className="py-2 px-4 me-2 w-1/2 bg-black text-white rounded-full hover:bg-gray-700 transition duration-200"
                     >
-                        Edit
+                        {isEditing ? 'Save' : 'Edit'}
                     </button>
                     <button
                         type="submit"
