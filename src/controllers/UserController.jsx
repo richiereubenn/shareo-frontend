@@ -81,30 +81,57 @@ const getUserDetails = async (userId) => {
 // Function to get all transactions by user ID
 const getUserTransactions = async (userId) => {
     try {
-        // Reference to the transactions collection
-        const transactionsRef = collection(db, "transactions");
+        // Query the "payments" collection to get all payments for the user
+        const paymentsQuery = query(collection(db, "payments"), where("user_id", "==", userId));
+        const paymentsSnapshot = await getDocs(paymentsQuery);
 
-        // Query to fetch transactions where userId matches
-        const q = query(transactionsRef, where("user_id", "==", userId));
+        // Create an array to hold the transaction IDs
+        const transactionIds = [];
+        
+        // Loop through the payment documents and collect the transaction IDs
+        paymentsSnapshot.forEach((doc) => {
+            const paymentData = doc.data();
+            transactionIds.push(paymentData.transaction_id);  // Collect the transaction ID
+        });
 
-        // Execute the query
-        const querySnapshot = await getDocs(q);
+        // If no payments are found for the user, return an empty result
+        if (transactionIds.length === 0) {
+            return {
+                success: true,
+                message: "No transactions found for this user.",
+                transactions: [],
+            };
+        }
 
-        // Extract and return the data from the documents
-        const transactions = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
+        // Query the "transactions" collection to get details of each transaction
+        const transactionsQuery = query(
+            collection(db, "transactions"),
+            where("id", "in", transactionIds) // Use "in" to fetch multiple transactions
+        );
+        const transactionsSnapshot = await getDocs(transactionsQuery);
 
+        // Create an array to hold the transaction data
+        const transactions = [];
+        
+        // Loop through the transactions and add them to the array
+        transactionsSnapshot.forEach((doc) => {
+            const transactionData = doc.data();
+            transactions.push(transactionData);  // Collect transaction details
+        });
+
+        // Return the list of transactions for the user
         return {
             success: true,
-            data: transactions,
+            message: "Transactions retrieved successfully!",
+            transactions,
         };
-    } catch (error) {
-        console.error("Error fetching transactions:", error);
+
+    } catch (e) {
+        console.error("Error retrieving transactions for user", e);
         return {
             success: false,
-            message: "An error occurred while fetching transactions",
+            message: "An error occurred while retrieving transactions.",
+            error: e,
         };
     }
 };

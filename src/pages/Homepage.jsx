@@ -8,6 +8,7 @@ import Button from "../components/Button"
 import { UserButton } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { getUserDetails, getUserTransactions } from "../controllers/UserController";
+import { getUsersFromTransaction } from "../controllers/TransactionController";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 
@@ -113,7 +114,7 @@ function Homepage() {
                         key={transaction.id} // Don't forget to add a key prop
                         title={transaction.title}
                         date={transaction.date}
-                        people={transaction.people}
+                        people={getUsersFromTransaction(transaction.id)}
                         total={transaction.total}
                         paid={transaction.paid}
                     />
