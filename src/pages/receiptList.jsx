@@ -4,6 +4,7 @@ import { getItemsByRoomId, getRoomData } from '../controllers/RoomController';
 import { useUser } from '@clerk/clerk-react';
 
 const ReceiptList = () => {
+    // const location = useLocation();
     const navigate = useNavigate();
     const { roomId } = useParams();
     const { user } = useUser()
@@ -15,6 +16,18 @@ const ReceiptList = () => {
     const [roomData, setRoomData] = useState(null);
     const [totalPrice, setTotalPrice] = useState(0);
 
+    // useEffect(() => {
+    //     if (location.state) {
+    //         const { items = [], receiptName = '', scanDate = '' } = location.state;
+    //         setItems(items);
+    //         setReceiptName(receiptName);
+    //         setScanDate(scanDate);
+    //         if (items.length > 0) {
+    //             calculateTotals(items);
+    //         }
+    //     }
+    // }, [location.state]);
+
     useEffect(() => {
         console.log("User : " + user.firstName)
         const fetchRoom = async () => {
@@ -24,6 +37,7 @@ const ReceiptList = () => {
 
                 if (result.success) {
                     console.log("Successfully fetched room:", result);
+                    // Assuming `setItems` is a state setter for storing fetched room data
                     setRoomData(result.data);
                 } else {
                     console.error("Failed to fetch room:", result.message);
@@ -60,7 +74,8 @@ const ReceiptList = () => {
         };
 
         fetchItems();
-    }, [roomId]);
+    }, [roomId]); // Dependency array ensures this effect runs when roomId changes
+
 
     const calculateTotals = (items) => {
         if (!items) return;
@@ -70,7 +85,8 @@ const ReceiptList = () => {
         setTotals({ subtotal, tax, total });
     };
 
-    const handleInputChange = (index, field, value) => {
+    const handleInputChange = (e, index, field) => {
+        const value = e.target.value;
         const updatedItems = [...items];
         updatedItems[index][field] = value;
 
@@ -86,19 +102,6 @@ const ReceiptList = () => {
         setIsEditing(!isEditing);
     };
 
-    const handleSave = async () => {
-        try {
-            // Save each item to the database
-            const savePromises = items.map((item) => updateItemData(item.id, item));
-            await Promise.all(savePromises);
-
-            console.log("Successfully saved items");
-            setIsEditing(false);
-        } catch (error) {
-            console.error("Error saving items:", error);
-        }
-    };
-
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log("Navigating to select-item page with roomId: " + roomData.room_id);
@@ -109,6 +112,10 @@ const ReceiptList = () => {
         <div className="p-8 bg-white">
             <h2 className="text-2xl font-bold mb-2 text-left">{roomData?.room_name}</h2>
             <p className="text-left text-gray-600 mb-8">{scanDate}</p>
+            {/* Dummy */}
+            {/* <h2 className="text-2xl font-bold mb-2 text-left">{roomData?.room_name}</h2>
+            <p className="text-left text-gray-600 mb-8">{scanDate}</p> */}
+            {/* Real */}
             <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-4 gap-1 mb-4">
                     <span className="font-semibold">Nama</span>
@@ -160,23 +167,13 @@ const ReceiptList = () => {
                     </div>
                 </div>
                 <div className="flex justify-between items-center mt-4">
-                    {isEditing ? (
-                        <button
-                            type="button"
-                            onClick={handleSave}
-                            className="py-2 px-4 me-2 w-1/2 bg-black text-white rounded-full hover:bg-gray-700 transition duration-200"
-                        >
-                            Save
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={toggleEditing}
-                            className="py-2 px-4 me-2 w-1/2 bg-black text-white rounded-full hover:bg-gray-700 transition duration-200"
-                        >
-                            Edit
-                        </button>
-                    )}
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="py-2 px-4 me-2 w-1/2 bg-black text-white rounded-full hover:bg-gray-700 transition duration-200"
+                    >
+                        Edit
+                    </button>
                     <button
                         type="submit"
                         className="py-2 px-4 ms-2 w-1/2 bg-indigo-700 text-white rounded-full hover:bg-indigo-800 transition duration-200"
@@ -185,7 +182,8 @@ const ReceiptList = () => {
                     </button>
                 </div>
             </form>
-        </div>
+            {/* Dummy */}
+        </div >
     );
 };
 
