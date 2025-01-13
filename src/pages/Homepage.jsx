@@ -123,8 +123,8 @@ function Homepage() {
             <p className="font-semibold text-lg pt-2 px-4">Split Rooms</p>
             <div className="px-4">
                 {rooms.length > 0 ? (
-                    rooms.map((room) => (
-                        <div className="p-2" onClick={() => navigate(`/select-item/${room.id}`)}>
+                    rooms.map((room, index) => (
+                        <div key={index} className="p-2" onClick={() => navigate(`/select-item/${room.id}`)}>
                             <Card
                                 key={room.id} // Don't forget to add a key prop
                                 title={room.room_name}
@@ -137,7 +137,7 @@ function Homepage() {
                     // What to show when there are no transactions
                     <p className="flex w-full items-center justify-center">No rooms found</p>
                 )}
-                {transactions.length > 0 ? (
+                {transactions && transactions.length > 0 ? (
                     transactions.map((transaction) => (
                         <Card
                             key={transaction.id} // Don't forget to add a key prop
