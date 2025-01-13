@@ -50,7 +50,7 @@ function Homepage() {
     const joinRoom = () => {
         navigate("/scan-qr")
     }
-    
+
     return (
         <div className="p-4 pt-8 space-y-2">
             <div className="flex justify-between items-center">
@@ -69,7 +69,12 @@ function Homepage() {
             <div className="flex justify-between pt-2 items-center">
                 <div>
                     <p className="text-xl font-semibold text-gray-500">Your Balance</p>
-                    <p className="font-bold text-[30px]">Rp. {fbUser?.balance}</p>
+                    <p className="text-xl font-medium text-[#1e1e1e]">
+                        {fbUser?.balance?.toLocaleString('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                        })}
+                    </p>
                 </div>
 
                 <a href="/topup" className="bg-[#FFDB00] text-black text-sm font-bold py-2 px-4 rounded-lg">
