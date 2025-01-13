@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { SignedIn, SignedOut, useSession } from "@clerk/clerk-react";
 import AuthPage from "./pages/AuthPage";
 import Homepage from "./pages/Homepage";
 import PaymentPage from "./pages/PaymentPage";
@@ -13,14 +13,17 @@ import PaymentRecap from "./pages/PaymentRecap";
 import InvitationCode from "./pages/InvitationCodePage";
 import JoinRoom from "./pages/JoinRoomPage";
 import QRScanner from "./pages/QRScannerPage";
-import ProtectedRoute from "./components/ProtectedRoute";
 import { useUser } from "@clerk/clerk-react";
 
 function App() {
 
-  const { isSignedIn, user, isLoaded } = useUser()
+  const navigate = useNavigate()
+
+  const { isSignedIn, user } = useUser()
   if (isSignedIn) {
-    console.log(user.firstName)
+    // console.log(user.firstName)
+    // console.log("Navigating to home ... ")
+    // navigate("/home")
   }
 
   const [transactionData, setTransactionData] = useState(null);
@@ -33,27 +36,20 @@ function App() {
 
   return (
     <Routes>
+      <Route path="/" element={(
+        <SignedOut>
+          <AuthPage />
+        </SignedOut>
+      )} />
+
       <Route
-        path="/"
-        element={
-          <>
-            <SignedOut>
-              <AuthPage />
-            </SignedOut>
-            <SignedIn>
-              <Homepage />
-            </SignedIn>
-          </>
-        }
-      />
-      {/* <Route
         path="/home"
         element={
           <SignedIn>
             <Homepage />
           </SignedIn>
         }
-      /> */}
+      />
       <Route
         path="/payment"
         element={
@@ -87,7 +83,7 @@ function App() {
         }
       />
       <Route
-        path="/receipt-list"
+        path="/receipt-list/:roomId"
         element={
           <SignedIn>
             <ReceiptList />
@@ -95,7 +91,7 @@ function App() {
         }
       />
       <Route
-        path="/select-item"
+        path="/select-item/:roomCode" 
         element={
           <SignedIn>
             <SelectItem />
@@ -114,7 +110,7 @@ function App() {
         path="/invitation-code"
         element={
           <SignedIn>
-            <InvitationCode />
+            <InvitationCode roomId="JTNgHBJc2JVU0TMzQ18K" />
           </SignedIn>
         }
       />

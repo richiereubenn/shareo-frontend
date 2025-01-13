@@ -6,7 +6,7 @@ export default function SuccessPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { type = 'payment', transactionData } = location.state || {};
-  
+
   const isTopUp = type === 'topup';
 
   return (
@@ -36,49 +36,36 @@ export default function SuccessPage() {
             <div className="flex justify-between">
               <span className="text-sm text-[#595959]">ID Transaksi</span>
               <span className="text-sm text-[#1e1e1e]">
-                {transactionData?.id || '12345678910'}
+                {transactionData?.id || 'N/A'}
               </span>
             </div>
 
             <div className="flex justify-between">
               <span className="text-sm text-[#595959]">Tanggal</span>
               <span className="text-sm text-[#1e1e1e]">
-                {transactionData?.date || '10 May 2023'}
+                {transactionData?.date || 'N/A'}
               </span>
             </div>
-
-            {!isTopUp && transactionData?.recipientName && (
-              <div className="flex justify-between">
-                <span className="text-sm text-[#595959]">Penerima</span>
-                <span className="text-sm text-[#1e1e1e]">
-                  {transactionData.recipientName}
-                </span>
-              </div>
-            )}
 
             <div className="flex justify-between">
-              <span className="text-sm text-[#595959]">
-                {isTopUp ? 'Nominal' : 'Jumlah'}
-              </span>
+              <span className="text-sm text-[#595959]">Nominal</span>
               <span className="text-sm text-[#1e1e1e]">
-                Rp {transactionData?.amount || '250.000'}
+                Rp {transactionData?.amount || 'N/A'}
               </span>
             </div>
 
-            {!isTopUp && (
+            <div className="mt-4">
               <div className="flex justify-between">
                 <span className="text-sm text-[#595959]">Biaya Admin</span>
                 <span className="text-sm text-[#1e1e1e]">
-                  Rp {transactionData?.adminFee || '1.000'}
+                  Rp {transactionData?.adminFee || 'N/A'}
                 </span>
               </div>
-            )}
 
-            <div className="pt-4 border-t border-gray-200">
-              <div className="flex justify-between">
+              <div className="flex justify-between mt-2">
                 <span className="text-sm font-medium text-[#1e1e1e]">Total</span>
                 <span className="text-sm font-medium text-[#1e1e1e]">
-                  Rp {transactionData?.total || '251.000'}
+                  Rp {transactionData?.total || 'N/A'}
                 </span>
               </div>
             </div>
@@ -86,7 +73,7 @@ export default function SuccessPage() {
             {transactionData?.status && (
               <div className="flex justify-between">
                 <span className="text-sm text-[#595959]">Status</span>
-                <span className="text-sm text-green-600">Berhasil</span>
+                <span className="text-sm text-green-600">{transactionData.status}</span>
               </div>
             )}
           </div>
@@ -95,8 +82,8 @@ export default function SuccessPage() {
 
       {/* Home Button */}
       <div className="p-6">
-        <button 
-          onClick={() => navigate('/')}
+        <button
+          onClick={() => navigate('/home')}
           className="w-full bg-[#451dcd] text-white py-3 rounded-lg font-medium hover:bg-[#451dcd]/90 transition-colors"
         >
           Kembali ke Home

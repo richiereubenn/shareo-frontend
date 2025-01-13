@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import shareoLogo from "../assets/images/Shareo.png";
-import { useSignIn } from "@clerk/clerk-react";
-import { useSignUp } from "@clerk/clerk-react";
+import { useSignIn, useSignUp } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import db from "../controllers/firebaseConfig";
+
+import { createNewUser } from "../controllers/UserController";
 
 export default function AuthPage() {
   const [currentView, setCurrentView] = useState("login");
@@ -16,13 +16,13 @@ export default function AuthPage() {
 }
 
 function LoginForm({ onSwitch }) {
-  const { signIn, setSession } = useSignIn();
+  const { signIn, setActive } = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const navigate = useNavigate()  
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,12 +33,14 @@ function LoginForm({ onSwitch }) {
       });
 
       if (result.status === "complete") {
-        // Successfully signed in, you can redirect here
+        // Successfully signed in
         alert("Login successful!");
-        // navigate("/home"); // or wherever you want to redirect
-        navigate("/"); // or wherever you want to redirect
+
+        await setActive({ session: result.createdSessionId })
+        // Navigate to the desired page
+        navigate("/home");
       } else {
-        // Handle any additional sign-in factors if needed
+        // Handle additional sign-in factors
         console.log("Additional sign-in factors may be required");
         console.log(result);
       }
@@ -181,7 +183,7 @@ function LoginForm({ onSwitch }) {
 }
 
 function RegisterForm({ onSwitch }) {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -203,7 +205,7 @@ function RegisterForm({ onSwitch }) {
     }
 
     try {
-      await signUp.create({
+      const signUpResponse = await signUp.create({
         first_name: firstName,
         last_name: lastName,
         email_address: email,
@@ -237,6 +239,29 @@ function RegisterForm({ onSwitch }) {
         console.log(JSON.stringify(completeSignUp, null, 2));
       }
       if (completeSignUp.status === 'complete') {
+
+        const clerkUserId = completeSignUp.createdUserId;
+        console.log("Sign up response id : " + completeSignUp.id)
+        console.log("clerkUserId : " + clerkUserId)
+  
+        // Save the user to Firebase Firestore
+        const firebaseUser = {
+          user_id: clerkUserId,
+          firstname: firstName,
+          lastname: lastName,
+          username: username, // Default username from email prefix
+          email,
+          phone_number: phone, // Default empty phone number if not provided
+          password, // Optional: You may choose not to save the raw password in Firestore
+          balance: 0, // Default initial balance
+        };
+  
+        const firebaseResponse = await createNewUser(firebaseUser);
+  
+        if (!firebaseResponse.success) {
+          console.error("Failed to save user in Firebase:", firebaseResponse.message);
+        }
+
         await setActive({ session: completeSignUp.createdSessionId });
         router('/home');
       }
@@ -303,6 +328,25 @@ function RegisterForm({ onSwitch }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Username
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User size={18} className="text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    placeholder="Enter your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required={true}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email
                 </label>
                 <div className="relative">
@@ -320,7 +364,7 @@ function RegisterForm({ onSwitch }) {
                 </div>
               </div>
 
-              {/* <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Phone Number
                 </label>
@@ -336,7 +380,7 @@ function RegisterForm({ onSwitch }) {
                     onChange={(e) => setPhone(e.target.value)}
                   />
                 </div>
-              </div> */}
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

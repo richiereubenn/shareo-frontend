@@ -11,9 +11,14 @@ function QRScanner() {
     if (data && data.text) {
       setScanResult(data.text);
       // Jika scan berhasil, langsung navigasi ke halaman berdasarkan hasil scan
-      navigate(`/room/${data.text}`);
+      navigate(`/select-item/${data.text}`);
     }
   };
+
+  const back = () => {
+    console.log("Navigating back")
+    navigate("/home")
+  }
 
   // Fungsi untuk menangani error saat scanning
   const handleError = (err) => {
@@ -29,14 +34,14 @@ function QRScanner() {
   return (
     <div className="p-4 font-poppins">
       {/* Tombol Kembali */}
-      <div className=" top-4 left-4">
-        <button
-          className=" text-3xl font-bold hover:opacity-80"
-          onClick={() => window.history.back()} // Navigasi kembali
-        >
-          &#8592;
-        </button>
-      </div>
+      <button
+        className="top-4 left-4 text-3xl font-bold hover:opacity-80"
+        onClick={back} // Navigasi kembali
+      >
+        &#8592;
+      </button>
+      {/* <div className=" top-4 left-4">
+      </div> */}
 
       {/* Judul dan tombol "Using Code" */}
       <div className=" top-4 right-4 flex justify-between items-center my-2">

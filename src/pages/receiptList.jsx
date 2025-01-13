@@ -1,40 +1,71 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { getItemsByRoomId, getRoomData } from '../controllers/RoomController';
 
 const ReceiptList = () => {
     // const location = useLocation();
     const navigate = useNavigate();
+    const { roomId } = useParams();
 
+    const [items, setItems] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    // const [items, setItems] = useState([]);
     const [receiptName, setReceiptName] = useState('');
     const [scanDate, setScanDate] = useState('');
     const [totals, setTotals] = useState({ subtotal: 0, tax: 0, total: 0 });
+    const [roomData, setRoomData] = useState(null);
 
-    // Dummy
-    const [items, setItems] = useState([
-        { name: 'Italian Steak & Fries', quantity: 1, price: 36.00, totalPrice: 36.00 },
-        { name: 'Beef Salad', quantity: 1, price: 29.50, totalPrice: 29.50 },
-        { name: 'Chicken Salad', quantity: 1, price: 28.50, totalPrice: 28.50 },
-        { name: 'Beef', quantity: 1, price: 38.50, totalPrice: 38.50 },
-        { name: 'Scrambled Eggs', quantity: 2, price: 13.50, totalPrice: 27.00 },
-        { name: 'Soup', quantity: 2, price: 17.50, totalPrice: 35.00 },
-        { name: 'Vanilla & Lemon Martini', quantity: 1, price: 18.50, totalPrice: 18.50 },
-        { name: 'Homemade Lemonade', quantity: 1, price: 6.75, totalPrice: 6.75 },
-        { name: 'Water', quantity: 2, price: 3.75, totalPrice: 7.50 }
-    ]);
+    // useEffect(() => {
+    //     if (location.state) {
+    //         const { items = [], receiptName = '', scanDate = '' } = location.state;
+    //         setItems(items);
+    //         setReceiptName(receiptName);
+    //         setScanDate(scanDate);
+    //         if (items.length > 0) {
+    //             calculateTotals(items);
+    //         }
+    //     }
+    // }, [location.state]);
 
     useEffect(() => {
-        if (location.state) {
-            const { items = [], receiptName = '', scanDate = '' } = location.state;
-            setItems(items);
-            setReceiptName(receiptName);
-            setScanDate(scanDate);
-            if (items.length > 0) {
-                calculateTotals(items);
+        const fetchRoom = async () => {
+            try {
+                const result = await getRoomData(roomId);
+                console.log("Room:", result);
+
+                if (result.success) {
+                    console.log("Successfully fetched room:", result);
+                    // Assuming `setItems` is a state setter for storing fetched room data
+                    setRoomData(result.data);
+                } else {
+                    console.error("Failed to fetch room:", result.message);
+                }
+            } catch (error) {
+                console.error("Error fetching room:", error);
             }
-        }
-    }, [location.state]);
+        };
+
+        fetchRoom();
+
+        const fetchItems = async () => {
+            try {
+                const result = await getItemsByRoomId(roomId);
+                console.log("Items:", result);
+
+                if (result.success) {
+                    console.log("Successfully fetched items:", result);
+                    // Assuming `setItems` is a state setter for storing fetched items
+                    setItems(result.data);
+                } else {
+                    console.error("Failed to fetch items:", result.message);
+                }
+            } catch (error) {
+                console.error("Error fetching items:", error);
+            }
+        };
+
+        fetchItems();
+    }, [roomId]); // Dependency array ensures this effect runs when roomId changes
+
 
     const calculateTotals = (items) => {
         if (!items) return;
@@ -43,19 +74,6 @@ const ReceiptList = () => {
         const total = subtotal + tax;
         setTotals({ subtotal, tax, total });
     };
-
-    // const handleInputChange = (index, field, value) => {
-    //     const updatedItems = [...items];
-    //     updatedItems[index][field] = value;
-    //     setItems(updatedItems);
-    //     calculateTotals(updatedItems);
-    // };
-
-    // const handleInputChange = (index, field, value) => { 
-    //     const newItems = [...editableItems]; 
-    //     newItems[index][field] = value; 
-    //     setEditableItems(newItems); 
-    // };
 
     const handleInputChange = (e, index, field) => {
         const value = e.target.value;
@@ -73,7 +91,6 @@ const ReceiptList = () => {
     const toggleEditing = () => {
         setIsEditing(!isEditing);
     };
-    
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -86,7 +103,7 @@ const ReceiptList = () => {
             {/* <h2 className="text-2xl font-bold mb-2 text-left">{receiptName}</h2> */}
             {/* <p className="text-left text-gray-600 mb-8">{scanDate}</p> */}
             {/* Dummy */}
-            <h2 className="text-2xl font-bold mb-2 text-left">GO.Restaurant</h2>
+            <h2 className="text-2xl font-bold mb-2 text-left">{roomData?.room_name}</h2>
             <p className="text-left text-gray-600 mb-8">{scanDate}</p>
             {/* Real */}
             {/* <form onSubmit={handleSubmit}> */}
@@ -168,28 +185,28 @@ const ReceiptList = () => {
                         <div key={index} className="grid grid-cols-4 gap-1 mb-2" style={{ gridTemplateColumns: '3fr 1fr 2fr 2fr' }}>
                             <input
                                 type="text"
-                                value={item.name}
+                                value={item.item_name}
                                 onChange={(e) => handleInputChange(e, index, 'name')}
                                 className="self-center"
                                 disabled={!isEditing}
                             />
                             <input
                                 type="number"
-                                value={item.quantity}
+                                value={item.item_qty}
                                 onChange={(e) => handleInputChange(e, index, 'quantity')}
                                 className="self-center"
                                 disabled={!isEditing}
                             />
                             <input
                                 type="text"
-                                value={item.price}
+                                value={item.item_price}
                                 onChange={(e) => handleInputChange(e, index, 'price')}
                                 className="self-center"
                                 disabled={!isEditing}
                             />
                             <input
                                 type="text"
-                                value={item.totalPrice.toFixed(2)}
+                                value={(item.item_price * item.item_qty)}
                                 disabled
                                 className="self-center"
                             />
@@ -200,12 +217,12 @@ const ReceiptList = () => {
                 <div className="flex justify-between mt-6">
                     <div className="text-left">
                         <p className="text-lg">Jumlah</p>
-                        <p className="text-lg">Tax</p>
+                        {/* <p className="text-lg">Tax</p> */}
                         <p className="text-lg font-bold text-indigo-700">Jumlah Total</p>
                     </div>
                     <div className="text-right">
                         <p className="text-lg">Rp 227.75</p>
-                        <p className="text-lg">Rp 15</p>
+                        {/* <p className="text-lg">Rp 15</p> */}
                         <p className="text-lg font-bold text-indigo-700">Rp 242.75</p>
                     </div>
                 </div>

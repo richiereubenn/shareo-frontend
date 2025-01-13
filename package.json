@@ -20,6 +20,7 @@
     "@babel/runtime": "^7.26.0",
     "@clerk/clerk-react": "^5.21.0",
     "@yudiel/react-qr-scanner": "^2.1.0",
+    "axios": "^1.7.9",
     "firebase": "^11.1.0",
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",

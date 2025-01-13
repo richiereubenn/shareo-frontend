@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 const SelectItem = () => {
+    const { roomCode } = useParams(); 
     const location = useLocation();
     const navigate = useNavigate();
     const [items, setItems] = useState([]);
@@ -50,6 +51,7 @@ const SelectItem = () => {
 
     return (
         <div className="p-8 bg-white">
+            <p>Room code {roomCode}</p>
             <div className="flex justify-between items-center mb-4">
                 <button onClick={() => navigate(-1)} className="text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

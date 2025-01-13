@@ -1,12 +1,27 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { topUp } from '../controllers/UserController';
+import { useUser } from "@clerk/clerk-react";
+import { useEffect } from "react";
+import { getUserDetails } from "../controllers/UserController";
 
 export default function TopUpPage() {
   const navigate = useNavigate();
   const [selectedAmount, setSelectedAmount] = useState('');
   const [customAmount, setCustomAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('');
+  const [fbUser, setFbUser] = useState(null)
+  const { user } = useUser()
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const userDetails = await getUserDetails(user.id)
+      console.log("User details : ", userDetails)
+      setFbUser(userDetails.data)
+    }
+    fetchUserDetails()
+  }, [])
 
   const amounts = [
     '50.000',
@@ -47,21 +62,43 @@ export default function TopUpPage() {
     return new Intl.NumberFormat('id-ID').format(amount);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const amount = selectedAmount || customAmount;
+
     if (amount && selectedMethod) {
-      const transactionData = {
-        id: Math.random().toString(36).substr(2, 9),
-        date: new Date().toLocaleDateString('id-ID', {
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric'
-        }),
-        amount:(parseFloat(amount.replace(/\./g, ''))).toLocaleString('id-ID'),
-        total:(parseFloat(amount.replace(/\./g, ''))).toLocaleString('id-ID'),
-        status: 'success'
-      };
-      navigate('/success', { state: { type: 'topup', transactionData } });
+      try {
+        const parsedAmount = parseFloat(amount.replace(/\./g, ''));
+        const adminFee = 1500;
+        const totalAmount = parsedAmount + adminFee;
+
+        const userId = user.id;
+
+        const result = await topUp(userId, parsedAmount, selectedMethod);
+
+        if (result.success) {
+          navigate('/success', {
+            state: {
+              type: 'topup',
+              transactionData: {
+                id: result.transactionId,
+                date: new Date().toLocaleDateString('id-ID', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                }),
+                amount: parsedAmount.toLocaleString('id-ID'),
+                adminFee: adminFee.toLocaleString('id-ID'),
+                total: totalAmount.toLocaleString('id-ID'),
+                status: 'success',
+              },
+            },
+          });
+        } else {
+          console.error('Top-up failed:', result.message);
+        }
+      } catch (error) {
+        console.error('Error during top-up:', error);
+      }
     }
   };
 
@@ -77,7 +114,12 @@ export default function TopUpPage() {
       <div className="p-4 max-w-md mx-auto">
         <div className="mb-6">
           <p className="text-sm text-[#595959]">Saldo</p>
-          <p className="text-xl font-medium text-[#1e1e1e]">Rp 100.000</p>
+          <p className="text-xl font-medium text-[#1e1e1e]">
+            {fbUser?.balance?.toLocaleString('id-ID', {
+              style: 'currency',
+              currency: 'IDR',
+            })}
+          </p>
         </div>
 
         <div className="mb-6">
@@ -88,8 +130,8 @@ export default function TopUpPage() {
                 key={amount}
                 onClick={() => handleAmountSelect(amount)}
                 className={`p-3 rounded-lg border text-center transition-colors
-                  ${selectedAmount === amount 
-                    ? 'border-[#451dcd] bg-[#451dcd] bg-opacity-10 text-[#451dcd]' 
+                  ${selectedAmount === amount
+                    ? 'border-[#451dcd] bg-[#451dcd] bg-opacity-10 text-[#451dcd]'
                     : 'border-gray-200 hover:border-[#451dcd] text-[#1e1e1e]'
                   }`}
               >
@@ -97,7 +139,7 @@ export default function TopUpPage() {
               </button>
             ))}
           </div>
-          
+
           <div className="mt-3">
             <p className="text-sm text-[#595959] mb-2">Atau masukkan nominal</p>
             <div className="relative">
@@ -115,7 +157,7 @@ export default function TopUpPage() {
 
         <div className="space-y-4">
           <p className="text-sm font-medium text-[#1e1e1e]">Pilih Metode Pembayaran</p>
-          
+
           {Object.entries(paymentMethods).map(([category, methods]) => (
             <div key={category} className="space-y-2">
               <p className="text-xs text-[#595959]">{category}</p>
@@ -128,8 +170,8 @@ export default function TopUpPage() {
                       ${selectedMethod === method.id ? 'bg-[#451dcd] bg-opacity-10' : ''}`}
                   >
                     <div className="w-8 h-8 bg-[#f8f8f8] rounded flex items-center justify-center">
-                      <img 
-                        src={`/api/placeholder/32/32`} 
+                      <img
+                        src={`/api/placeholder/32/32`}
                         alt={method.name}
                         className="w-6 h-6"
                       />
