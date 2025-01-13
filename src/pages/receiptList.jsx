@@ -94,7 +94,7 @@ const ReceiptList = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        navigate('/selectItem', { state: { items, receiptName, scanDate, totals } });
+        navigate('/select-item', { state: { items, receiptName, scanDate, totals } });
     };
 
     return (
