@@ -3,6 +3,10 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getItemsByRoomId, getRoomData, createTransaction, updateItemQuantity } from '../controllers/RoomController';
 import { useUser } from '@clerk/clerk-react';
 
+import db from '../controllers/firebaseConfig';
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+
+
 const SelectItem = () => {
     const { roomId } = useParams();
     const location = useLocation();

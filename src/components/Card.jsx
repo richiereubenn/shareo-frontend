@@ -18,9 +18,9 @@ function Card({ title, date, people, total, paid }) {
       <div className="flex justify-between items-center">
         <div>
           <p className="text-xs text-gray-500">Total</p>
-          <p className="text-[#4B1AD4] text-lg font-bold">{`Rp. ${total}`}</p>
+          <p className="text-[#4B1AD4] text-lg font-bold">{`Rp. ${total ? total : ''}`}</p>
         </div>
-        <p className="text-lg font-medium">{`${paid}% Paid`}</p>
+        <p className="text-lg font-medium">{`${paid ? paid + '% paid' : ''}`}</p>
       </div>
     </div>
   );
