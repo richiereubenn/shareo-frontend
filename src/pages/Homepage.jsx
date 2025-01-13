@@ -8,6 +8,7 @@ import Button from "../components/Button"
 import { UserButton } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { getUserDetails, getUserTransactions } from "../controllers/UserController";
+import { getUsersFromTransaction } from "../controllers/TransactionController";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { getRoomsByUserId } from "../controllers/RoomController";
@@ -152,6 +153,23 @@ function Homepage() {
                     <p className="flex w-full items-center justify-center">No transactions found</p>
                 )}
             </div>
+
+            <p className="font-semibold text-lg pt-2">Split History</p>
+            {transactions.length > 0 ? (
+                transactions.map((transaction) => (
+                    <Card
+                        key={transaction.id} // Don't forget to add a key prop
+                        title={transaction.title}
+                        date={transaction.date}
+                        people={getUsersFromTransaction(transaction.id)}
+                        total={transaction.total}
+                        paid={transaction.paid}
+                    />
+                ))
+            ) : (
+                // What to show when there are no transactions
+                <p className="flex w-full items-center justify-center">No transactions found</p>
+            )}
         </div>
     )
 }
