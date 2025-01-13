@@ -56,6 +56,7 @@ const getRoomData = async (roomId) => {
     if (roomSnap.exists()) {
       return {
         success: true,
+        room_id: roomId,
         data: roomSnap.data(),
       };
     } else {

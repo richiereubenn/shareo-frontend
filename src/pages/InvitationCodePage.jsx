@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import QRCode from "react-qr-code";
 import Button from "../components/Button";
 import { getRoomData } from "../controllers/RoomController"; // Import fungsi getRoomData
+import { useParams } from "react-router-dom";
 
-function InvitationCode({ roomId }) { // Terima roomId sebagai prop
+function InvitationCode() { // Terima roomId sebagai prop
+  const { roomId } = useParams()
   const [roomData, setRoomData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -68,7 +70,7 @@ function InvitationCode({ roomId }) { // Terima roomId sebagai prop
       </p>
 
       <div className="flex flex-col items-center mb-6">
-        <QRCode value={roomCode} className="mb-4" size={256} level="H"/> {/* Gunakan roomId untuk QR Code */}
+        <QRCode value={roomCode} className="mb-4" size={256} level="H" /> {/* Gunakan roomId untuk QR Code */}
         <p className="text-lg">
           Room Code: <span className="font-bold text-[#4B1AD4]">{roomCode}</span>
         </p>

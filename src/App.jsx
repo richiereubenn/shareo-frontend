@@ -91,7 +91,7 @@ function App() {
         }
       />
       <Route
-        path="/select-item/:roomCode" 
+        path="/select-item/:roomId" 
         element={
           <SignedIn>
             <SelectItem />
@@ -107,10 +107,10 @@ function App() {
         }
       />
       <Route
-        path="/invitation-code"
+        path="/invitation-code/:roomId"
         element={
           <SignedIn>
-            <InvitationCode roomId="JTNgHBJc2JVU0TMzQ18K" />
+            <InvitationCode />
           </SignedIn>
         }
       />

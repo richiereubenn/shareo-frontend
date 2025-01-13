@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getItemsByRoomId, getRoomData } from '../controllers/RoomController';
+import { useUser } from '@clerk/clerk-react';
 
 const ReceiptList = () => {
     // const location = useLocation();
     const navigate = useNavigate();
     const { roomId } = useParams();
+    const { user } = useUser()
 
     const [items, setItems] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [receiptName, setReceiptName] = useState('');
     const [scanDate, setScanDate] = useState('');
     const [totals, setTotals] = useState({ subtotal: 0, tax: 0, total: 0 });
     const [roomData, setRoomData] = useState(null);
+    const [totalPrice, setTotalPrice] = useState(0);
 
     // useEffect(() => {
     //     if (location.state) {
@@ -27,6 +29,7 @@ const ReceiptList = () => {
     // }, [location.state]);
 
     useEffect(() => {
+        console.log("User : " + user.firstName)
         const fetchRoom = async () => {
             try {
                 const result = await getRoomData(roomId);
@@ -52,9 +55,16 @@ const ReceiptList = () => {
                 console.log("Items:", result);
 
                 if (result.success) {
-                    console.log("Successfully fetched items:", result);
-                    // Assuming `setItems` is a state setter for storing fetched items
-                    setItems(result.data);
+                    console.log("Items:", result.data);
+                    const fetchedItems = result.data;
+                    setItems(fetchedItems);
+
+                    // Calculate the total price
+                    const total = fetchedItems.reduce((sum, item) => {
+                        return sum + item.item_price * item.item_qty;
+                    }, 0);
+
+                    setTotalPrice(total);
                 } else {
                     console.error("Failed to fetch items:", result.message);
                 }
@@ -94,13 +104,13 @@ const ReceiptList = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        navigate(`/select-item/${createRoom.roomCode}`, { state: { items, receiptName, scanDate, totals } });
+        console.log("Navigating to select-item page with roomId: " + roomData.room_id);
+        navigate('/select-item/' + roomId);
     };
 
     return (
         <div className="p-8 bg-white">
-            {/* Real */}
-            <h2 className="text-2xl font-bold mb-2 text-left">{receiptName}</h2>
+            <h2 className="text-2xl font-bold mb-2 text-left">{roomData?.room_name}</h2>
             <p className="text-left text-gray-600 mb-8">{scanDate}</p>
             {/* Dummy */}
             {/* <h2 className="text-2xl font-bold mb-2 text-left">{roomData?.room_name}</h2>
@@ -117,28 +127,28 @@ const ReceiptList = () => {
                     <div key={index} className="grid grid-cols-4 gap-2 mb-2">
                         <input
                             type="text"
-                            value={item.name}
+                            value={item.item_name}
                             disabled={!isEditing}
                             onChange={(e) => handleInputChange(index, 'name', e.target.value)}
                             className="self-center"
                         />
                         <input
                             type="number"
-                            value={item.quantity}
+                            value={item.item_qty}
                             disabled={!isEditing}
                             onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
                             className="self-center"
                         />
                         <input
                             type="text"
-                            value={item.price}
+                            value={item.item_price}
                             disabled={!isEditing}
                             onChange={(e) => handleInputChange(index, 'price', e.target.value)}
                             className="self-center"
                         />
                         <input
                             type="text"
-                            value={(parseFloat(item.price) * parseInt(item.quantity)).toFixed(2)}
+                            value={(parseFloat(item.item_price) * parseInt(item.item_qty))}
                             disabled
                             className="self-center"
                         />
@@ -151,18 +161,18 @@ const ReceiptList = () => {
                         <p className="text-lg font-bold text-indigo-700">Jumlah Total</p>
                     </div>
                     <div className="text-right">
-                        <p className="text-lg">Rp {totals.subtotal.toFixed(2)}</p>
-                        <p className="text-lg">Rp {totals.tax.toFixed(2)}</p>
-                        <p className="text-lg font-bold text-indigo-700">Rp {totals.total.toFixed(2)}</p>
+                        <p className="text-lg">Rp {totalPrice}</p>
+                        {/* <p className="text-lg">Rp 15</p> */}
+                        <p className="text-lg font-bold text-indigo-700">Rp {totalPrice}</p>
                     </div>
                 </div>
                 <div className="flex justify-between items-center mt-4">
                     <button
                         type="button"
-                        onClick={() => navigate(-1)}
+                        onClick={toggleEditing}
                         className="py-2 px-4 me-2 w-1/2 bg-black text-white rounded-full hover:bg-gray-700 transition duration-200"
                     >
-                        Edit
+                        {isEditing ? 'Save' : 'Edit'}
                     </button>
                     <button
                         type="submit"
