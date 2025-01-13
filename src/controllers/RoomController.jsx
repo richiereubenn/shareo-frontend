@@ -1,5 +1,5 @@
 import db from "./firebaseConfig";
-import { doc, getDoc, addDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, addDoc, collection, query, where, getDocs, updateDoc } from "firebase/firestore";
 
 const createRoomAndAddItems = async (userId, items, roomName) => {
   try {
@@ -116,4 +116,56 @@ const getItemsByRoomId = async (roomId) => {
   }
 };
 
-export { createRoomAndAddItems, getRoomData, getItemsByRoomId };
+const createTransaction = async (userId, roomId, items, totalAmount) => {
+  try {
+    const transactionData = {
+      user_id: userId,
+      room_id: roomId,
+      total_amount: totalAmount,
+      date: new Date().toISOString(),
+      items: items.map((item) => ({
+        item_name: item.item_name,
+        item_qty: item.selected_qty,
+        item_price: item.item_price,
+        total_price: item.item_price * item.selected_qty,
+      })),
+      status: "Pending",
+    };
+
+    const transactionRef = await addDoc(collection(db, "transactions"), transactionData);
+
+    return {
+      success: true,
+      message: "Transaction created successfully!",
+      transactionId: transactionRef.id,
+    };
+  } catch (error) {
+    console.error("Error creating transaction:", error);
+    return {
+      success: false,
+      message: "Failed to create transaction.",
+      error,
+    };
+  }
+};
+
+
+const updateItemQuantity = async (itemId, newQuantity) => {
+  try {
+      const itemRef = doc(db, "items", itemId);
+      await updateDoc(itemRef, { item_qty: newQuantity });
+      return {
+          success: true,
+          message: "Item quantity updated successfully.",
+      };
+  } catch (error) {
+      console.error("Error updating item quantity:", error);
+      return {
+          success: false,
+          message: "Failed to update item quantity.",
+          error,
+      };
+  }
+};
+
+export { createRoomAndAddItems, getRoomData, getItemsByRoomId, createTransaction, updateItemQuantity };

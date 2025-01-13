@@ -108,7 +108,7 @@ function Homepage() {
                 />
             </div>
             <p className="font-semibold text-lg pt-2">Split History</p>
-            {transactions.length > 0 ? (
+            {transactions && transactions.length > 0 ? (
                 transactions.map((transaction) => (
                     <Card
                         key={transaction.id} // Don't forget to add a key prop

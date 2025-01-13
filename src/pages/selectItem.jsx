@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { getItemsByRoomId, getRoomData } from '../controllers/RoomController';
+import { getItemsByRoomId, getRoomData, createTransaction, updateItemQuantity } from '../controllers/RoomController';
 import { useUser } from '@clerk/clerk-react';
 
 const SelectItem = () => {
@@ -15,55 +15,14 @@ const SelectItem = () => {
     const [roomData, setRoomData] = useState(null);
     const [users, setUsers] = useState(['aaa', 'bbb'])
     const { user } = useUser()
+    const [selectedItems, setSelectedItems] = useState([]);
 
     useEffect(() => {
-        // if (location.state) {
-        //     const { items = [], receiptName = '', scanDate = '' } = location.state;
-        //     setItems(items);
-        //     setReceiptName(receiptName);
-        //     setScanDate(scanDate);
-        //     if (items.length > 0) {
-        //         calculateTotals(items);
-        //     }
-        // }
-        // }, [location.state]);
-
-
-        console.log("User : " + user.firstName)
-        console.log("RoomId : " + roomId)
-
-        const fetchRoom = async () => {
-            try {
-                const result = await getRoomData(roomId);
-                console.log("Room:", result);
-
-                if (result.success) {
-                    console.log("Successfully fetched room:", result);
-                    // Assuming `setItems` is a state setter for storing fetched room data
-                    setRoomData(result.data);
-                } else {
-                    console.error("Failed to fetch room:", result.message);
-                }
-            } catch (error) {
-                console.error("Error fetching room:", error);
-            }
-        };
-
         const fetchItems = async () => {
             try {
                 const result = await getItemsByRoomId(roomId);
-                console.log("Items:", result);
-
                 if (result.success) {
-                    const fetchedItems = result.data;
-                    setItems(fetchedItems);
-
-                    // Calculate the total price
-                    const total = fetchedItems.reduce((sum, item) => {
-                        return sum + item.item_price * item.item_qty;
-                    }, 0);
-
-                    setTotalPrice(total);
+                    setItems(result.data);
                 } else {
                     console.error("Failed to fetch items:", result.message);
                 }
@@ -73,114 +32,129 @@ const SelectItem = () => {
         };
 
         fetchItems();
-        fetchRoom();
+    }, [roomId]);
 
-    }, []);
-
-    const handleQuantityChange = (index, delta) => {
-        const updatedItems = [...items];
-        const newQuantity = parseInt(updatedItems[index].quantity, 10) + delta;
-        if (newQuantity >= 0) {
-            updatedItems[index].quantity = newQuantity.toString();
-            setItems(updatedItems);
-            calculateTotals(updatedItems);
+    const handleItemClick = async (item) => {
+        if (item.item_qty <= 0) return; // Prevent selecting if quantity is 0
+    
+        const updatedQuantity = item.item_qty - 1;
+    
+        try {
+            // Update the quantity in the database
+            const result = await updateItemQuantity(item.id, updatedQuantity);
+            if (result.success) {
+                // Update the local state
+                const updatedItems = items.map((i) =>
+                    i.id === item.id
+                        ? { ...i, item_qty: updatedQuantity }
+                        : i
+                );
+                setItems(updatedItems);
+    
+                // Add to selected items or update quantity
+                const existingItem = selectedItems.find((i) => i.id === item.id);
+                if (existingItem) {
+                    const updatedSelectedItems = selectedItems.map((i) =>
+                        i.id === item.id
+                            ? { ...i, selected_qty: i.selected_qty + 1 }
+                            : i
+                    );
+                    setSelectedItems(updatedSelectedItems);
+                } else {
+                    setSelectedItems([...selectedItems, { ...item, selected_qty: 1 }]);
+                }
+    
+                calculateTotals([...selectedItems, { ...item, selected_qty: 1 }]);
+            } else {
+                alert("Failed to update item quantity in the database.");
+            }
+        } catch (error) {
+            console.error("Error updating item quantity:", error);
         }
     };
+    
 
-    const calculateTotals = (items) => {
-        if (!items) return;
-        const subtotal = items.reduce((acc, item) => acc + (parseFloat(item.price) * parseInt(item.quantity)), 0);
-        const tax = subtotal * 0.1;
-        const total = subtotal + tax;
-        setTotals({ subtotal, tax, total });
+    const calculateTotals = (selectedItems) => {
+        const total = selectedItems.reduce((sum, item) => {
+            return sum + item.item_price * item.selected_qty;
+        }, 0);
+        setTotals({ total });
     };
 
-    const handlePayment = () => {
-        const paymentRecapData = items.map(item => ({
-            name: item.name,
-            total: parseInt(item.quantity, 10) * parseFloat(item.price),
-            status: 'Unpaid'
+    const handlePayment = async () => {
+        if (selectedItems.length === 0) {
+            alert("Please select at least one item to proceed.");
+            return;
+        }
+    
+        const paymentData = selectedItems.map((item) => ({
+            item_name: item.item_name,
+            selected_qty: item.selected_qty,
+            item_price: item.item_price,
+            total_price: item.item_price * item.selected_qty,
         }));
-        navigate('/payment-recap', { state: { payments: paymentRecapData, scanDate } });
-    };
-
-    const handleItemClick = async (data) => {
-        // const result = await addItemToUser({ item_id: item.item_id, user_id: user.id, room_id: roomId });
-        const result = await addItemToUser(data);
-        console.log("Result:", result);
+    
+        try {
+            const result = await createTransaction(user.id, roomId, paymentData, totals.total);
+    
+            if (result.success) {
+                alert("Transaction successfully created!");
+                navigate('/payment-recap', {
+                    state: {
+                        transactionId: result.transactionId,
+                        payments: paymentData,
+                        totalAmount: totals.total,
+                        scanDate,
+                    },
+                });
+            } else {
+                console.error(result.message);
+                alert("Failed to create transaction.");
+            }
+        } catch (error) {
+            console.error("Error in handlePayment:", error);
+            alert("An unexpected error occurred.");
+        }
     };
 
     return (
         <div className="p-8 bg-white">
-            <p>Room code {roomId}</p>
-            <div className="flex justify-between items-center mb-4">
-                <button onClick={() => navigate(-1)} className="text-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-            </div>
-            <div className="flex justify-between items-center mb-2">
-                <h2 className="text-2xl font-bold text-left text-black">Select Item</h2>
-                <a href={`/invitation-code/${roomId}`} className="w-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
-                    </svg>
-                </a>
-            </div>
-            <p className="text-left text-gray-600 mb-1">{scanDate}</p>
-            <p className="text-left text-indigo-700 mb-4">Created by: {receiptName}</p>
-            {/* Dummy */}
-            {/* <p className="text-left text-gray-600 mb-1">3 Januari 2025</p>
-            <p className="text-left text-indigo-700 mb-6">Created by: Rafi</p> */}
-            <form>
-                {items.map((item, index) => (
-                    <div key={index} className="mb-4" onClick={() => handleItemClick({ item_id: item.item_id, user_id: user.id, room_id: roomId })}>
-                        <div className="grid grid-cols-3 gap-1 mb-2 items-center mb-2" style={{ gridTemplateColumns: '3fr 2fr 1fr' }}>
-                            <h3 className="text-lg font-semibold">{item.item_name}</h3>
-                            <h3 className="text-lg font-semibold">{item.item_qty}</h3>
-                            <div className="flex items-center">
-                                {/* <button
-                                    type="button"
-                                    onClick={() => handleQuantityChange(index, -1)}
-                                    className="py-1 px-3 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition duration-200"
-                                >
-                                    -
-                                </button>
-                                <span className="mx-2">{item.quantity}</span>
-                                <button
-                                    type="button"
-                                    onClick={() => handleQuantityChange(index, 1)}
-                                    className="py-1 px-3 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition duration-200"
-                                >
-                                    +
-                                </button> */}
-                            </div>
-                            <span>Rp {item.item_price}</span>
-                        </div>
-                        {users.map((user, index) => (
-                            <div key={index} className="flex justify-between items-center mb-2">
-                                <h3 className="text-lg font-semibold">{user}</h3>
-                                <span>Rp {item.item_price}</span>
-                            </div>
-                        ))}
-                        <hr className="my-4 border-gray-300" />
+            <h2 className="text-2xl font-bold text-black mb-4">Select Items</h2>
+            {items.map((item) => (
+                <div key={item.id} className="mb-4">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-lg">{item.item_name}</h3>
+                        <p>Qty: {item.item_qty}</p>
+                        <p>Rp {item.item_price}</p>
+                        <button
+                            onClick={() => handleItemClick(item)}
+                            className="py-1 px-3 bg-indigo-500 text-white rounded"
+                            disabled={item.item_qty <= 0}
+                        >
+                            Select
+                        </button>
+                    </div>
+                </div>
+            ))}
+            <div className="mt-8">
+                <h3 className="text-lg font-bold mb-4">Selected Items</h3>
+                {selectedItems.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center">
+                        <h3 className="text-lg">{item.item_name}</h3>
+                        <p>Qty: {item.selected_qty}</p>
+                        <p>Rp {item.item_price * item.selected_qty}</p>
                     </div>
                 ))}
-                <div className="flex justify-between mt-8 text-center">
-                    <h3 className="text-lg font-bold mb-2 text-indigo-700">Total Tagihan Anda</h3>
-                    <p className="text-2xl font-bold text-indigo-700">Rp {totals.total.toFixed(2)}</p>
-                </div>
-                <div className="mt-8 text-center">
-                    <button
-                        type="button"
-                        onClick={handlePayment}
-                        className="py-2 px-6 bg-indigo-700 text-white font-bold rounded-full hover:bg-indigo-700 transition duration-200"
-                    >
-                        Pay Rp {totals.total.toFixed(2)}
-                    </button>
-                </div>
-            </form>
+            </div>
+            <div className="mt-8">
+                <h3 className="text-lg font-bold">Total: Rp {totals.total.toFixed(2)}</h3>
+                <button
+                    onClick={handlePayment}
+                    className="py-2 px-4 bg-green-500 text-white rounded mt-4"
+                >
+                    Proceed to Payment
+                </button>
+            </div>
         </div>
     );
 };

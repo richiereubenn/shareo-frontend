@@ -1,6 +1,6 @@
 import { doc, getDoc } from "firebase/firestore";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { addDoc, doc, updateDoc } from "firebase/firestore";
+import { addDoc, updateDoc } from "firebase/firestore";
 
 const createTransactionsAndPaymentInfo = async (title, total, paid, userIds, roomId) => {
     try {
@@ -78,4 +78,4 @@ const getUsersFromTransaction = async (transactionId) => {
 
 
 
-export default { createTransactionsAndPaymentInfo, getUsersFromTransaction };
+export { createTransactionsAndPaymentInfo, getUsersFromTransaction };
